@@ -133,7 +133,7 @@ def main() -> None:
     st.divider()
 
     st.caption(
-        "CeylonCompass V1 Ã¢â‚¬Â¢ Explainable Travel Recommendation "
+        "CeylonCompass V1 \u2022 Explainable Travel Recommendation "
         "and Route Optimization for Sri Lanka"
     )
 
