@@ -3,14 +3,14 @@ import streamlit as st
 
 st.set_page_config(
     page_title="CeylonCompass",
-    page_icon="????",
+    page_icon="\U0001F1F1\U0001F1F0",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
 
 def main() -> None:
-    st.title("???? CeylonCompass")
+    st.title("\U0001F1F1\U0001F1F0 CeylonCompass")
     st.subheader("Smart Sri Lanka Travel Recommendation & Route Optimization")
 
     st.write(
@@ -133,7 +133,7 @@ def main() -> None:
     st.divider()
 
     st.caption(
-        "CeylonCompass V1 • Explainable Travel Recommendation "
+        "CeylonCompass V1 â€¢ Explainable Travel Recommendation "
         "and Route Optimization for Sri Lanka"
     )
 
