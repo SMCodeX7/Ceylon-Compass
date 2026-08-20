@@ -1,5 +1,8 @@
 import streamlit as st
 
+from src.recommendation.recommender import rank_destinations
+from src.recommendation.traveller_profile import TravellerProfile
+
 
 st.set_page_config(
     page_title="CeylonCompass",
@@ -9,9 +12,114 @@ st.set_page_config(
 )
 
 
+def display_recommendations(profile: TravellerProfile) -> None:
+    """Generate and display ranked destination recommendations."""
+
+    recommendations = rank_destinations(
+        profile,
+        top_n=10,
+    )
+
+    st.subheader("Top Destination Recommendations")
+
+    st.caption(
+        "Current ranking combines traveller interests, "
+        "budget compatibility, and crowd preference."
+    )
+
+    display_df = recommendations[
+        [
+            "recommendation_rank",
+            "name",
+            "category",
+            "estimated_daily_cost_usd",
+            "preference_score",
+            "budget_score",
+            "crowd_score",
+            "current_stage_score",
+        ]
+    ].copy()
+
+    display_df.columns = [
+        "Rank",
+        "Destination",
+        "Category",
+        "Daily Cost (USD)",
+        "Interest Match",
+        "Budget Match",
+        "Crowd Match",
+        "Overall Score",
+    ]
+
+    st.dataframe(
+        display_df,
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.subheader("Recommendation Details")
+
+    for _, destination in recommendations.head(5).iterrows():
+        with st.expander(
+            f"#{int(destination['recommendation_rank'])} "
+            f"{destination['name']} "
+            f"— {destination['current_stage_score']:.2f}%"
+        ):
+            col1, col2, col3, col4 = st.columns(4)
+
+            col1.metric(
+                "Interest Match",
+                f"{destination['preference_score']:.1f}%",
+            )
+
+            col2.metric(
+                "Budget Match",
+                f"{destination['budget_score']:.1f}%",
+            )
+
+            col3.metric(
+                "Crowd Match",
+                f"{destination['crowd_score']:.1f}%",
+            )
+
+            col4.metric(
+                "Current Score",
+                f"{destination['current_stage_score']:.1f}%",
+            )
+
+            st.write(
+                f"**Category:** {destination['category']}"
+            )
+
+            st.write(
+                f"**Location:** "
+                f"{destination['district']} District, "
+                f"{destination['province']} Province"
+            )
+
+            st.write(
+                f"**Estimated Daily Cost:** "
+                f"${destination['estimated_daily_cost_usd']:.0f}"
+            )
+
+            if destination["budget_compatible"]:
+                st.success(
+                    "This destination is within the traveller's "
+                    "current daily budget."
+                )
+            else:
+                st.warning(
+                    "This destination is above the traveller's "
+                    "current daily budget."
+                )
+
+
 def main() -> None:
     st.title("\U0001F1F1\U0001F1F0 CeylonCompass")
-    st.subheader("Smart Sri Lanka Travel Recommendation & Route Optimization")
+
+    st.subheader(
+        "Smart Sri Lanka Travel Recommendation & Route Optimization"
+    )
 
     st.write(
         """
@@ -21,9 +129,10 @@ def main() -> None:
     )
 
     st.info(
-        "CeylonCompass V1 will combine destination recommendation, "
-        "route optimization, budget planning, weather intelligence, "
-        "and interactive travel maps."
+        "CeylonCompass V1 combines explainable destination "
+        "recommendation with budget-aware and crowd-aware ranking. "
+        "Weather intelligence, route optimization, itinerary generation, "
+        "and interactive maps will be added in the next stages."
     )
 
     st.divider()
@@ -105,30 +214,82 @@ def main() -> None:
 
     st.divider()
 
-    if st.button("Generate Smart Trip", type="primary", use_container_width=True):
+    if st.button(
+        "Generate Smart Trip",
+        type="primary",
+        use_container_width=True,
+    ):
         if not interests:
-            st.warning("Please select at least one travel interest.")
+            st.warning(
+                "Please select at least one travel interest."
+            )
             return
 
-        st.success("Traveller profile captured successfully.")
+        try:
+            profile = TravellerProfile(
+                starting_point=starting_point,
+                trip_days=trip_days,
+                budget_usd=float(budget),
+                travel_style=travel_style,
+                crowd_preference=crowd_preference,
+                transport=transport,
+                interests=tuple(interests),
+            )
 
-        st.subheader("Current Traveller Profile")
+            st.success(
+                "Traveller profile processed successfully."
+            )
 
-        profile_col1, profile_col2, profile_col3 = st.columns(3)
+            st.subheader("Current Traveller Profile")
 
-        profile_col1.metric("Trip Duration", f"{trip_days} days")
-        profile_col2.metric("Budget", f"${budget}")
-        profile_col3.metric("Starting Point", starting_point)
+            profile_col1, profile_col2, profile_col3 = st.columns(3)
 
-        st.write(f"**Travel Style:** {travel_style}")
-        st.write(f"**Crowd Preference:** {crowd_preference}")
-        st.write(f"**Transport:** {transport}")
-        st.write(f"**Interests:** {', '.join(interests)}")
+            profile_col1.metric(
+                "Trip Duration",
+                f"{profile.trip_days} days",
+            )
 
-        st.info(
-            "Destination recommendations will be connected here "
-            "after the recommendation engine is implemented."
-        )
+            profile_col2.metric(
+                "Total Budget",
+                f"${profile.budget_usd:.0f}",
+            )
+
+            profile_col3.metric(
+                "Daily Budget",
+                f"${profile.daily_budget():.2f}",
+            )
+
+            st.write(
+                f"**Starting Point:** "
+                f"{profile.starting_point}"
+            )
+
+            st.write(
+                f"**Travel Style:** "
+                f"{profile.travel_style}"
+            )
+
+            st.write(
+                f"**Crowd Preference:** "
+                f"{profile.crowd_preference}"
+            )
+
+            st.write(
+                f"**Transport:** "
+                f"{profile.transport}"
+            )
+
+            st.write(
+                f"**Interests:** "
+                f"{', '.join(profile.interests)}"
+            )
+
+            st.divider()
+
+            display_recommendations(profile)
+
+        except ValueError as error:
+            st.error(str(error))
 
     st.divider()
 
