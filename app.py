@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_folium import st_folium
 
 from src.budget.estimator import (
     TRANSPORT_COST_PER_KM,
@@ -21,6 +22,9 @@ from src.recommendation.recommender import (
 )
 from src.recommendation.traveller_profile import (
     TravellerProfile,
+)
+from src.visualization.map_builder import (
+    build_optimized_route_map,
 )
 from src.weather.client import (
     fetch_weather_forecast,
@@ -767,14 +771,60 @@ def display_budget_breakdown(
         )
 
 
+def display_interactive_route_map(
+    profile: TravellerProfile,
+    optimized_route,
+) -> None:
+    """
+    Display the optimized route as an interactive
+    Folium/OpenStreetMap visualization.
+    """
+
+    st.divider()
+
+    st.header(
+        "Interactive Trip Map"
+    )
+
+    st.caption(
+        "The map shows your starting point, numbered "
+        "destination stops, and the optimized geographic "
+        "visit sequence."
+    )
+
+    route_map = (
+        build_optimized_route_map(
+            optimized_route,
+            profile.starting_point,
+        )
+    )
+
+    st_folium(
+        route_map,
+        height=560,
+        use_container_width=True,
+        returned_objects=[],
+    )
+
+    st.info(
+        "The connecting line represents the optimized "
+        "sequence between destination coordinates. "
+        "It is not a turn-by-turn road route."
+    )
+
+    st.caption(
+        "Base map data: OpenStreetMap contributors."
+    )
+
+
 def display_route_and_itinerary(
     profile: TravellerProfile,
     recommendations,
 ) -> None:
     """
     Optimize the top recommended destinations, create
-    a feasible itinerary, enrich it with weather, and
-    display its estimated budget.
+    a feasible itinerary, display its interactive map,
+    enrich it with weather, and display its budget.
     """
 
     st.divider()
@@ -881,6 +931,11 @@ def display_route_and_itinerary(
         route_display,
         use_container_width=True,
         hide_index=True,
+    )
+
+    display_interactive_route_map(
+        profile,
+        optimized_route,
     )
 
     st.divider()
@@ -1055,8 +1110,8 @@ def main() -> None:
         """
         Plan a personalized Sri Lankan journey based
         on your interests, budget, trip duration,
-        travel style, preferred destinations, and
-        live weather conditions.
+        travel style, preferred destinations, live
+        weather conditions, and optimized route.
         """
     )
 
@@ -1064,10 +1119,10 @@ def main() -> None:
         "CeylonCompass V1 currently provides "
         "explainable destination recommendations, "
         "geospatial route optimization, "
+        "interactive route visualization, "
         "day-by-day itinerary scheduling, "
         "transparent trip budget estimation, and "
-        "live weather intelligence. Interactive maps "
-        "will be added in the next development stage."
+        "live weather intelligence."
     )
 
     st.divider()
@@ -1257,8 +1312,9 @@ def main() -> None:
     st.caption(
         "CeylonCompass V1 • Explainable Travel "
         "Recommendation, Route Optimization, "
-        "Itinerary Planning, Budget Estimation, "
-        "and Weather Intelligence for Sri Lanka"
+        "Interactive Mapping, Itinerary Planning, "
+        "Budget Estimation, and Weather Intelligence "
+        "for Sri Lanka"
     )
 
 
