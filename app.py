@@ -4,21 +4,20 @@ from streamlit_folium import st_folium
 from src.budget.estimator import (
     TRANSPORT_COST_PER_KM,
     TRAVEL_STYLE_FACTORS,
-    estimate_trip_budget,
 )
-from src.itinerary.planner import (
-    generate_itinerary,
-    itinerary_summary,
-)
-from src.optimization.route_optimizer import (
-    calculate_optimized_route_distance,
-    optimize_route,
+from src.planning.service import (
+    TripPlan,
+    generate_trip_plan,
 )
 from src.recommendation.explanations import (
     explain_destination,
 )
-from src.recommendation.recommender import (
-    rank_destinations,
+from src.recommendation.final_scoring import (
+    BUDGET_WEIGHT,
+    CROWD_WEIGHT,
+    PREFERENCE_WEIGHT,
+    ROUTE_EFFICIENCY_WEIGHT,
+    WEATHER_WEIGHT,
 )
 from src.recommendation.traveller_profile import (
     TravellerProfile,
@@ -30,12 +29,10 @@ from src.weather.client import (
     fetch_weather_forecast,
 )
 from src.weather.scoring import (
-    score_weather_forecast,
     weather_suitability_label,
 )
 
 
-ROUTE_CANDIDATE_COUNT = 7
 WEATHER_CACHE_TTL_SECONDS = 1800
 
 
@@ -60,8 +57,8 @@ def get_cached_weather_forecast(
     Retrieve and temporarily cache Open-Meteo
     forecast data.
 
-    Caching prevents unnecessary repeated API calls
-    when Streamlit reruns the application.
+    The unified planning service receives this
+    function as its weather provider.
     """
 
     return fetch_weather_forecast(
@@ -71,44 +68,103 @@ def get_cached_weather_forecast(
     )
 
 
+def display_scoring_methodology() -> None:
+    """
+    Explain the final weighted recommendation model.
+    """
+
+    with st.expander(
+        "How the final recommendation score works"
+    ):
+        st.markdown(
+            "### Final CeylonCompass Ranking Model"
+        )
+
+        st.write(
+            f"- **Preference Similarity:** "
+            f"{PREFERENCE_WEIGHT * 100:.0f}%"
+        )
+
+        st.write(
+            f"- **Budget Compatibility:** "
+            f"{BUDGET_WEIGHT * 100:.0f}%"
+        )
+
+        st.write(
+            f"- **Weather Suitability:** "
+            f"{WEATHER_WEIGHT * 100:.0f}%"
+        )
+
+        st.write(
+            f"- **Crowd Compatibility:** "
+            f"{CROWD_WEIGHT * 100:.0f}%"
+        )
+
+        st.write(
+            f"- **Route Efficiency:** "
+            f"{ROUTE_EFFICIENCY_WEIGHT * 100:.0f}%"
+        )
+
+        st.info(
+            "If live weather is unavailable for a "
+            "destination, the weather component is "
+            "excluded and the remaining active weights "
+            "are normalized."
+        )
+
+        st.info(
+            "If Crowd Preference is set to "
+            "'No Preference', the crowd component is "
+            "excluded instead of artificially rewarding "
+            "every destination."
+        )
+
+        st.caption(
+            "Route efficiency is currently a geographic "
+            "candidate-selection proxy based on distance "
+            "from the starting point and relative "
+            "proximity to the candidate cluster. "
+            "It is not road-routing distance."
+        )
+
+
 def display_recommendations(
-    profile: TravellerProfile,
-):
+    plan: TripPlan,
+) -> None:
     """
-    Generate and display ranked destination
-    recommendations.
-
-    Returns the ranked recommendations so they can be
-    passed directly to route optimization.
+    Display final destination recommendations produced
+    by the unified planning service.
     """
 
-    recommendations = rank_destinations(
-        profile,
-        top_n=10,
+    recommendations = (
+        plan.recommendations
     )
 
-    st.subheader(
-        "Top Destination Recommendations"
+    st.header(
+        "Final Destination Recommendations"
     )
 
     st.caption(
-        "Current ranking combines traveller interests, "
-        "budget compatibility, and crowd preference. "
-        "Live weather is currently shown separately "
-        "and will be added to the final ranking score "
-        "during full-system integration."
+        "Destinations are ranked using traveller "
+        "preferences, budget compatibility, live weather, "
+        "crowd preference when selected, and geographic "
+        "route-efficiency information."
     )
+
+    display_scoring_methodology()
 
     display_df = recommendations[
         [
-            "recommendation_rank",
+            "final_recommendation_rank",
             "name",
             "category",
             "estimated_daily_cost_usd",
             "preference_score",
             "budget_score",
+            "ranking_weather_score",
             "crowd_score",
-            "current_stage_score",
+            "route_efficiency_score",
+            "final_score",
         ]
     ].copy()
 
@@ -119,8 +175,10 @@ def display_recommendations(
         "Daily Cost (USD)",
         "Interest Match",
         "Budget Match",
+        "Weather",
         "Crowd Match",
-        "Overall Score",
+        "Route Efficiency",
+        "Final Score",
     ]
 
     st.dataframe(
@@ -133,12 +191,6 @@ def display_recommendations(
         "Recommendation Details"
     )
 
-    st.caption(
-        "Open a destination below to see its score "
-        "breakdown, recommendation reasons, and "
-        "possible trade-offs."
-    )
-
     for _, destination in (
         recommendations
         .head(5)
@@ -146,39 +198,89 @@ def display_recommendations(
     ):
         explanation = explain_destination(
             destination,
-            profile,
+            plan.profile,
+        )
+
+        rank = int(
+            destination[
+                "final_recommendation_rank"
+            ]
+        )
+
+        final_score = float(
+            destination[
+                "final_score"
+            ]
         )
 
         with st.expander(
-            f"#{int(destination['recommendation_rank'])} "
+            f"#{rank} "
             f"{destination['name']} "
-            f"— {destination['current_stage_score']:.2f}%"
+            f"— {final_score:.2f}%"
         ):
-            col1, col2, col3, col4 = (
-                st.columns(4)
+            col1, col2, col3, col4, col5 = (
+                st.columns(5)
             )
 
             col1.metric(
-                "Interest Match",
-                f"{destination['preference_score']:.1f}%",
+                "Interest",
+                (
+                    f"{float(destination['preference_score']):.1f}%"
+                ),
             )
 
             col2.metric(
-                "Budget Match",
-                f"{destination['budget_score']:.1f}%",
+                "Budget",
+                (
+                    f"{float(destination['budget_score']):.1f}%"
+                ),
             )
 
-            col3.metric(
-                "Crowd Match",
-                f"{destination['crowd_score']:.1f}%",
-            )
+            if bool(
+                destination[
+                    "weather_component_active"
+                ]
+            ):
+                col3.metric(
+                    "Weather",
+                    (
+                        f"{float(destination['ranking_weather_score']):.1f}%"
+                    ),
+                )
+            else:
+                col3.metric(
+                    "Weather",
+                    "Unavailable",
+                )
 
             col4.metric(
-                "Current Score",
-                f"{destination['current_stage_score']:.1f}%",
+                "Route Efficiency",
+                (
+                    f"{float(destination['route_efficiency_score']):.1f}%"
+                ),
+            )
+
+            col5.metric(
+                "Final Score",
+                f"{final_score:.1f}%",
             )
 
             st.divider()
+
+            if bool(
+                destination[
+                    "crowd_component_active"
+                ]
+            ):
+                st.write(
+                    f"**Crowd Compatibility:** "
+                    f"{float(destination['crowd_score']):.1f}%"
+                )
+            else:
+                st.write(
+                    "**Crowd Compatibility:** "
+                    "Excluded — no crowd preference selected"
+                )
 
             st.write(
                 f"**Category:** "
@@ -193,14 +295,34 @@ def display_recommendations(
 
             st.write(
                 f"**Estimated Daily Cost:** "
-                f"${destination['estimated_daily_cost_usd']:.0f}"
+                f"${float(destination['estimated_daily_cost_usd']):.0f}"
             )
 
             st.write(
                 f"**Recommended Visit Duration:** "
-                f"{destination['recommended_duration_hours']:.0f} "
+                f"{float(destination['recommended_duration_hours']):.0f} "
                 f"hours"
             )
+
+            st.write(
+                f"**Distance From Starting Point:** "
+                f"{float(destination['distance_from_start_km']):.1f} km"
+            )
+
+            if bool(
+                destination[
+                    "weather_component_active"
+                ]
+            ):
+                st.write(
+                    f"**Forecast Suitability:** "
+                    f"{destination['ranking_weather_suitability']}"
+                )
+            else:
+                st.write(
+                    "**Forecast Suitability:** "
+                    "Live weather unavailable"
+                )
 
             st.divider()
 
@@ -215,7 +337,9 @@ def display_recommendations(
                     f"- {reason}"
                 )
 
-            if explanation["tradeoffs"]:
+            if explanation[
+                "tradeoffs"
+            ]:
                 st.markdown(
                     "### Trade-offs to consider"
                 )
@@ -226,211 +350,442 @@ def display_recommendations(
                     st.write(
                         f"- {tradeoff}"
                     )
-            else:
-                st.success(
-                    "No major trade-offs were identified "
-                    "for your current traveller profile."
-                )
 
-    return recommendations
+            st.divider()
+
+            st.markdown(
+                "### Active Score Weights"
+            )
+
+            weight_col1, weight_col2, weight_col3 = (
+                st.columns(3)
+            )
+
+            weight_col1.write(
+                f"Preference: "
+                f"{float(destination['preference_weight_used']) * 100:.0f}%"
+            )
+
+            weight_col1.write(
+                f"Budget: "
+                f"{float(destination['budget_weight_used']) * 100:.0f}%"
+            )
+
+            weight_col2.write(
+                f"Weather: "
+                f"{float(destination['weather_weight_used']) * 100:.0f}%"
+            )
+
+            weight_col2.write(
+                f"Crowd: "
+                f"{float(destination['crowd_weight_used']) * 100:.0f}%"
+            )
+
+            weight_col3.write(
+                f"Route Efficiency: "
+                f"{float(destination['route_efficiency_weight_used']) * 100:.0f}%"
+            )
+
+            weight_col3.write(
+                f"Active Weight Total: "
+                f"{float(destination['active_weight_total']) * 100:.0f}%"
+            )
 
 
-def enrich_itinerary_with_weather(
-    profile: TravellerProfile,
-    itinerary,
-):
+def display_interactive_route_map(
+    plan: TripPlan,
+) -> None:
     """
-    Attach destination-specific live forecast data
-    to scheduled itinerary rows.
-
-    Itinerary Day 1 uses forecast day 1, Day 2 uses
-    forecast day 2, and so on.
-
-    Weather API failures are isolated so that the
-    rest of the trip planner remains usable.
+    Display the optimized route using Folium and
+    OpenStreetMap.
     """
 
-    weather_itinerary = itinerary.copy()
+    st.divider()
 
-    weather_itinerary[
-        "weather_available"
-    ] = False
-
-    weather_itinerary[
-        "weather_date"
-    ] = None
-
-    weather_itinerary[
-        "weather_description"
-    ] = None
-
-    weather_itinerary[
-        "weather_temperature_max_c"
-    ] = None
-
-    weather_itinerary[
-        "weather_temperature_min_c"
-    ] = None
-
-    weather_itinerary[
-        "weather_rain_probability"
-    ] = None
-
-    weather_itinerary[
-        "weather_precipitation_mm"
-    ] = None
-
-    weather_itinerary[
-        "weather_score"
-    ] = None
-
-    weather_itinerary[
-        "weather_suitability"
-    ] = None
-
-    forecast_days = min(
-        profile.trip_days,
-        16,
+    st.header(
+        "Interactive Trip Map"
     )
 
-    for index, destination in (
-        weather_itinerary[
-            weather_itinerary["scheduled"]
-        ].iterrows()
+    st.caption(
+        "The green marker is your starting location. "
+        "Numbered markers show the optimized visit "
+        "sequence."
+    )
+
+    route_map = (
+        build_optimized_route_map(
+            plan.optimized_route,
+            plan.profile.starting_point,
+        )
+    )
+
+    st_folium(
+        route_map,
+        height=560,
+        use_container_width=True,
+        returned_objects=[],
+    )
+
+    st.info(
+        "The route line connects geographic coordinates "
+        "in optimized visit order. It does not represent "
+        "turn-by-turn road navigation."
+    )
+
+    st.caption(
+        "Base map data: OpenStreetMap contributors."
+    )
+
+
+def display_route(
+    plan: TripPlan,
+) -> None:
+    """
+    Display optimized route information.
+    """
+
+    st.divider()
+
+    st.header(
+        "Optimized Trip Route"
+    )
+
+    summary = (
+        plan.itinerary_summary
+    )
+
+    col1, col2, col3, col4 = (
+        st.columns(4)
+    )
+
+    col1.metric(
+        "Route Destinations",
+        len(
+            plan.optimized_route
+        ),
+    )
+
+    col2.metric(
+        "Route Distance",
+        (
+            f"{plan.optimized_route_distance_km:.1f} km"
+        ),
+    )
+
+    col3.metric(
+        "Scheduled Places",
+        summary[
+            "scheduled_destinations"
+        ],
+    )
+
+    col4.metric(
+        "Days Used",
+        summary[
+            "days_used"
+        ],
+    )
+
+    st.caption(
+        "Distance currently uses Haversine "
+        "great-circle distance between coordinates. "
+        "It is a geographic proxy rather than "
+        "driving-road distance."
+    )
+
+    route_names = (
+        plan.optimized_route[
+            "name"
+        ]
+        .astype(str)
+        .tolist()
+    )
+
+    if (
+        route_names
+        and route_names[
+            0
+        ].casefold()
+        == plan.profile.starting_point.casefold()
     ):
-        day_number = int(
-            destination[
-                "itinerary_day"
-            ]
+        route_text = (
+            " → ".join(
+                route_names
+            )
+        )
+    else:
+        route_text = (
+            plan.profile.starting_point
+            + " → "
+            + " → ".join(
+                route_names
+            )
         )
 
-        if day_number > forecast_days:
-            continue
+    st.markdown(
+        "### Recommended Visit Order"
+    )
 
-        try:
-            raw_forecast = (
-                get_cached_weather_forecast(
-                    float(
-                        destination[
-                            "latitude"
-                        ]
-                    ),
-                    float(
-                        destination[
-                            "longitude"
-                        ]
-                    ),
-                    forecast_days,
+    st.write(
+        route_text
+    )
+
+    route_display = (
+        plan.optimized_route[
+            [
+                "route_order",
+                "name",
+                "district",
+                "category",
+                "distance_from_previous_km",
+                "final_score",
+            ]
+        ].copy()
+    )
+
+    route_display.columns = [
+        "Route Order",
+        "Destination",
+        "District",
+        "Category",
+        "Distance From Previous (km)",
+        "Final Recommendation Score",
+    ]
+
+    st.dataframe(
+        route_display,
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    display_interactive_route_map(
+        plan
+    )
+
+
+def display_itinerary(
+    plan: TripPlan,
+) -> None:
+    """
+    Display the generated day-by-day itinerary.
+    """
+
+    st.divider()
+
+    st.header(
+        "Day-by-Day Itinerary"
+    )
+
+    itinerary = (
+        plan.itinerary
+    )
+
+    summary = (
+        plan.itinerary_summary
+    )
+
+    col1, col2, col3 = (
+        st.columns(3)
+    )
+
+    col1.metric(
+        "Scheduled Destinations",
+        summary[
+            "scheduled_destinations"
+        ],
+    )
+
+    col2.metric(
+        "Total Activity Time",
+        (
+            f"{summary['total_activity_hours']:.1f} "
+            f"hours"
+        ),
+    )
+
+    col3.metric(
+        "Unscheduled Destinations",
+        summary[
+            "unscheduled_destinations"
+        ],
+    )
+
+    scheduled = itinerary[
+        itinerary[
+            "scheduled"
+        ]
+    ].copy()
+
+    if scheduled.empty:
+        st.warning(
+            "No destinations could be scheduled "
+            "within the selected trip duration."
+        )
+
+    else:
+        itinerary_days = sorted(
+            scheduled[
+                "itinerary_day"
+            ]
+            .dropna()
+            .unique()
+        )
+
+        for day in itinerary_days:
+            day_number = int(
+                day
+            )
+
+            day_plan = (
+                scheduled[
+                    scheduled[
+                        "itinerary_day"
+                    ]
+                    == day
+                ]
+                .sort_values(
+                    "visit_order_in_day"
                 )
             )
 
-            scored_forecast = (
-                score_weather_forecast(
-                    raw_forecast
-                )
+            day_hours = float(
+                day_plan[
+                    "recommended_duration_hours"
+                ].sum()
             )
 
-            if (
-                day_number
-                > len(scored_forecast)
+            with st.expander(
+                (
+                    f"Day {day_number} "
+                    f"— {day_hours:.1f} activity hours"
+                ),
+                expanded=True,
             ):
-                continue
+                for _, destination in (
+                    day_plan.iterrows()
+                ):
+                    st.markdown(
+                        f"### "
+                        f"{int(destination['visit_order_in_day'])}. "
+                        f"{destination['name']}"
+                    )
 
-            weather = (
-                scored_forecast.iloc[
-                    day_number - 1
+                    detail_col1, detail_col2, detail_col3 = (
+                        st.columns(3)
+                    )
+
+                    detail_col1.write(
+                        f"**Category:** "
+                        f"{destination['category']}"
+                    )
+
+                    detail_col2.write(
+                        f"**Visit Duration:** "
+                        f"{float(destination['recommended_duration_hours']):.0f} "
+                        f"hours"
+                    )
+
+                    detail_col3.write(
+                        f"**Travel Distance:** "
+                        f"{float(destination['distance_from_previous_km']):.1f} "
+                        f"km"
+                    )
+
+                    st.write(
+                        f"**Location:** "
+                        f"{destination['district']} District, "
+                        f"{destination['province']} Province"
+                    )
+
+                    if bool(
+                        destination[
+                            "weather_available"
+                        ]
+                    ):
+                        weather_col1, weather_col2 = (
+                            st.columns(2)
+                        )
+
+                        weather_col1.write(
+                            f"**Weather:** "
+                            f"{destination['weather_description']}"
+                        )
+
+                        weather_col1.write(
+                            f"**Forecast Date:** "
+                            f"{destination['weather_date']}"
+                        )
+
+                        weather_col2.write(
+                            f"**Weather Suitability:** "
+                            f"{float(destination['weather_score']):.1f}% "
+                            f"({destination['weather_suitability']})"
+                        )
+
+                        weather_col2.write(
+                            f"**Rain Probability:** "
+                            f"{float(destination['weather_rain_probability']):.0f}%"
+                        )
+                    else:
+                        st.caption(
+                            "Live weather is unavailable "
+                            "for this itinerary stop."
+                        )
+
+                    st.divider()
+
+    unscheduled = itinerary[
+        ~itinerary[
+            "scheduled"
+        ]
+    ].copy()
+
+    if not unscheduled.empty:
+        st.warning(
+            f"{len(unscheduled)} destination(s) could "
+            f"not fit within the selected "
+            f"{plan.profile.trip_days}-day trip while "
+            f"respecting the current 8-hour daily "
+            f"activity limit."
+        )
+
+        unscheduled_display = (
+            unscheduled[
+                [
+                    "name",
+                    "category",
+                    "recommended_duration_hours",
+                    "final_score",
                 ]
-            )
+            ].copy()
+        )
 
-            weather_itinerary.at[
-                index,
-                "weather_available",
-            ] = True
+        unscheduled_display.columns = [
+            "Destination",
+            "Category",
+            "Required Activity Hours",
+            "Final Score",
+        ]
 
-            weather_itinerary.at[
-                index,
-                "weather_date",
-            ] = weather[
-                "date"
-            ].strftime(
-                "%Y-%m-%d"
-            )
+        st.dataframe(
+            unscheduled_display,
+            use_container_width=True,
+            hide_index=True,
+        )
 
-            weather_itinerary.at[
-                index,
-                "weather_description",
-            ] = weather[
-                "weather_description"
-            ]
-
-            weather_itinerary.at[
-                index,
-                "weather_temperature_max_c",
-            ] = float(
-                weather[
-                    "temperature_max_c"
-                ]
-            )
-
-            weather_itinerary.at[
-                index,
-                "weather_temperature_min_c",
-            ] = float(
-                weather[
-                    "temperature_min_c"
-                ]
-            )
-
-            weather_itinerary.at[
-                index,
-                "weather_rain_probability",
-            ] = float(
-                weather[
-                    "precipitation_probability_max"
-                ]
-            )
-
-            weather_itinerary.at[
-                index,
-                "weather_precipitation_mm",
-            ] = float(
-                weather[
-                    "precipitation_sum_mm"
-                ]
-            )
-
-            weather_itinerary.at[
-                index,
-                "weather_score",
-            ] = float(
-                weather[
-                    "weather_score"
-                ]
-            )
-
-            weather_itinerary.at[
-                index,
-                "weather_suitability",
-            ] = weather[
-                "weather_suitability"
-            ]
-
-        except (
-            RuntimeError,
-            ValueError,
-        ):
-            continue
-
-    return weather_itinerary
+    st.caption(
+        "The current 8-hour daily limit applies to "
+        "destination activity time only. Travel time "
+        "is not yet included in the daily-hour limit."
+    )
 
 
 def display_weather_intelligence(
-    profile: TravellerProfile,
-    itinerary,
-):
+    plan: TripPlan,
+) -> None:
     """
-    Fetch, score, and display destination-level
-    weather intelligence for the itinerary.
+    Display itinerary-day weather already retrieved
+    by the unified planning pipeline.
     """
 
     st.divider()
@@ -440,62 +795,57 @@ def display_weather_intelligence(
     )
 
     st.caption(
-        "Forecasts are retrieved from Open-Meteo "
-        "using each scheduled destination's latitude "
-        "and longitude. Weather suitability is a "
-        "CeylonCompass planning score from 0 to 100."
+        "Candidate ranking uses average forecast "
+        "suitability across the available trip horizon. "
+        "The itinerary below uses the specific forecast "
+        "for the day each destination is scheduled."
     )
 
-    with st.spinner(
-        "Retrieving destination weather forecasts..."
-    ):
-        weather_itinerary = (
-            enrich_itinerary_with_weather(
-                profile,
-                itinerary,
-            )
-        )
+    scheduled = (
+        plan.itinerary[
+            plan.itinerary[
+                "scheduled"
+            ]
+        ].copy()
+    )
 
-    scheduled = weather_itinerary[
-        weather_itinerary["scheduled"]
-    ].copy()
-
-    available = scheduled[
+    available = (
         scheduled[
-            "weather_available"
-        ]
-    ].copy()
-
-    unavailable_count = (
-        len(scheduled)
-        - len(available)
+            scheduled[
+                "weather_available"
+            ]
+        ].copy()
     )
 
     if available.empty:
         st.warning(
-            "Live weather data is currently unavailable. "
-            "The recommendation, route, itinerary, and "
-            "budget results remain usable."
+            "Live weather could not be retrieved for "
+            "the scheduled destinations. Other planning "
+            "components remain available."
         )
 
-        return weather_itinerary
+        return
 
-    average_weather_score = float(
+    average_score = float(
         available[
             "weather_score"
-        ].astype(float).mean()
+        ]
+        .astype(float)
+        .mean()
     )
 
     overall_label = (
         weather_suitability_label(
-            average_weather_score
+            average_score
         )
     )
 
     best_index = (
         available[
             "weather_score"
-        ].astype(float).idxmax()
+        ]
+        .astype(float)
+        .idxmax()
     )
 
     best_destination = (
@@ -504,57 +854,62 @@ def display_weather_intelligence(
         ]
     )
 
-    weather_col1, weather_col2, weather_col3, weather_col4 = (
+    col1, col2, col3, col4 = (
         st.columns(4)
     )
 
-    weather_col1.metric(
-        "Forecast Coverage",
-        f"{len(available)}/{len(scheduled)} places",
+    col1.metric(
+        "Itinerary Coverage",
+        (
+            f"{len(available)}/"
+            f"{len(scheduled)} places"
+        ),
     )
 
-    weather_col2.metric(
+    col2.metric(
         "Average Weather Score",
-        f"{average_weather_score:.1f}%",
+        f"{average_score:.1f}%",
     )
 
-    weather_col3.metric(
+    col3.metric(
         "Overall Suitability",
         overall_label,
     )
 
-    weather_col4.metric(
+    col4.metric(
         "Best Weather Stop",
         best_destination[
             "name"
         ],
     )
 
-    if unavailable_count > 0:
+    if (
+        plan.weather_failure_count
+        > 0
+    ):
         st.warning(
-            f"Weather data could not be retrieved for "
-            f"{unavailable_count} scheduled "
-            f"destination(s)."
+            f"Live forecast retrieval failed for "
+            f"{plan.weather_failure_count} candidate "
+            f"destination(s). Their weather weight was "
+            f"automatically excluded from final ranking."
         )
 
-    st.markdown(
-        "### Forecast by Scheduled Destination"
+    weather_display = (
+        available[
+            [
+                "itinerary_day",
+                "name",
+                "weather_date",
+                "weather_description",
+                "weather_temperature_max_c",
+                "weather_temperature_min_c",
+                "weather_rain_probability",
+                "weather_precipitation_mm",
+                "weather_score",
+                "weather_suitability",
+            ]
+        ].copy()
     )
-
-    weather_display = available[
-        [
-            "itinerary_day",
-            "name",
-            "weather_date",
-            "weather_description",
-            "weather_temperature_max_c",
-            "weather_temperature_min_c",
-            "weather_rain_probability",
-            "weather_precipitation_mm",
-            "weather_score",
-            "weather_suitability",
-        ]
-    ].copy()
 
     weather_display.columns = [
         "Day",
@@ -575,67 +930,34 @@ def display_weather_intelligence(
         hide_index=True,
     )
 
-    st.markdown(
-        "### Weather Notes"
-    )
-
-    for _, destination in (
-        available.iterrows()
-    ):
-        score = float(
-            destination[
-                "weather_score"
-            ]
-        )
-
-        rain_probability = float(
-            destination[
-                "weather_rain_probability"
-            ]
-        )
-
-        st.write(
-            f"**Day "
-            f"{int(destination['itinerary_day'])} — "
-            f"{destination['name']}:** "
-            f"{destination['weather_description']}, "
-            f"{score:.1f}% suitability, "
-            f"{rain_probability:.0f}% maximum "
-            f"precipitation probability."
-        )
-
-    st.info(
-        "Weather currently provides planning context "
-        "only. It does not yet modify destination "
-        "ranking or route order. The planned final "
-        "weather component will contribute 15% of the "
-        "full recommendation score during system "
-        "integration."
-    )
-
     st.caption(
         "Weather data: Open-Meteo. Forecasts can "
         "change and should be rechecked close to "
         "travel time."
     )
 
-    return weather_itinerary
+    st.caption(
+        "CeylonCompass currently assumes the trip "
+        "starts within the current forecast horizon. "
+        "A user-selected future travel start date is "
+        "not yet implemented."
+    )
 
 
 def display_budget_breakdown(
-    profile: TravellerProfile,
-    itinerary,
+    plan: TripPlan,
 ) -> None:
     """
-    Display the estimated trip budget for the
-    scheduled itinerary.
+    Display the budget already calculated by the
+    unified planning service.
     """
 
-    budget = estimate_trip_budget(
-        itinerary=itinerary,
-        total_budget_usd=profile.budget_usd,
-        travel_style=profile.travel_style,
-        transport=profile.transport,
+    budget = (
+        plan.budget
+    )
+
+    profile = (
+        plan.profile
     )
 
     st.divider()
@@ -644,33 +966,45 @@ def display_budget_breakdown(
         "Estimated Trip Budget"
     )
 
-    budget_col1, budget_col2, budget_col3, budget_col4 = (
+    col1, col2, col3, col4 = (
         st.columns(4)
     )
 
-    budget_col1.metric(
+    col1.metric(
         "Available Budget",
-        f"${budget['total_budget_usd']:.2f}",
+        (
+            f"${budget['total_budget_usd']:.2f}"
+        ),
     )
 
-    budget_col2.metric(
+    col2.metric(
         "Destination Cost",
-        f"${budget['destination_cost_usd']:.2f}",
+        (
+            f"${budget['destination_cost_usd']:.2f}"
+        ),
     )
 
-    budget_col3.metric(
+    col3.metric(
         "Transport Cost",
-        f"${budget['transport_cost_usd']:.2f}",
+        (
+            f"${budget['transport_cost_usd']:.2f}"
+        ),
     )
 
-    budget_col4.metric(
+    col4.metric(
         "Estimated Total",
-        f"${budget['estimated_total_cost_usd']:.2f}",
+        (
+            f"${budget['estimated_total_cost_usd']:.2f}"
+        ),
     )
 
     budget_used_percent = (
-        budget["estimated_total_cost_usd"]
-        / budget["total_budget_usd"]
+        budget[
+            "estimated_total_cost_usd"
+        ]
+        / budget[
+            "total_budget_usd"
+        ]
         * 100
     )
 
@@ -679,16 +1013,17 @@ def display_budget_breakdown(
         f"{budget_used_percent:.1f}%"
     )
 
-    progress_value = min(
-        budget_used_percent / 100,
-        1.0,
-    )
-
     st.progress(
-        progress_value
+        min(
+            budget_used_percent
+            / 100.0,
+            1.0,
+        )
     )
 
-    if budget["within_budget"]:
+    if budget[
+        "within_budget"
+    ]:
         st.success(
             f"Estimated trip cost is within budget. "
             f"Approximately "
@@ -703,8 +1038,8 @@ def display_budget_breakdown(
         )
 
         st.error(
-            f"Estimated trip cost exceeds the selected "
-            f"budget by approximately "
+            f"Estimated trip cost exceeds the "
+            f"selected budget by approximately "
             f"${amount_over:.2f}."
         )
 
@@ -734,7 +1069,7 @@ def display_budget_breakdown(
         )
 
         st.write(
-            f"**Transport Preference:** "
+            f"**Transport:** "
             f"{profile.transport}"
         )
 
@@ -744,355 +1079,55 @@ def display_budget_breakdown(
         )
 
         st.write(
-            """
-            Destination costs are estimated using each
-            destination's daily cost, the recommended
-            visit duration, and the selected travel-style
-            factor.
-            """
+            "Destination cost uses each destination's "
+            "estimated daily cost, recommended activity "
+            "duration, and selected travel-style factor."
         )
 
         st.write(
-            """
-            Transport cost is currently estimated using
-            the Haversine geographic route-distance proxy
-            multiplied by the selected transport-rate
-            assumption.
-            """
+            "Transport cost uses the Haversine route "
+            "distance proxy multiplied by the selected "
+            "transport-rate assumption."
         )
 
         st.warning(
-            "These values are transparent V1 modelling "
-            "assumptions rather than guaranteed market "
-            "prices. The estimate does not currently "
-            "include international flights, visas, "
-            "shopping, insurance, or other personal "
-            "expenses."
+            "These are transparent V1 modelling "
+            "assumptions rather than guaranteed current "
+            "Sri Lankan market prices."
+        )
+
+        st.caption(
+            "International flights, visas, insurance, "
+            "shopping and other personal spending are "
+            "not included."
         )
 
 
-def display_interactive_route_map(
-    profile: TravellerProfile,
-    optimized_route,
+def display_trip_plan(
+    plan: TripPlan,
 ) -> None:
     """
-    Display the optimized route as an interactive
-    Folium/OpenStreetMap visualization.
+    Render all outputs from one unified TripPlan.
     """
 
-    st.divider()
-
-    st.header(
-        "Interactive Trip Map"
+    display_recommendations(
+        plan
     )
 
-    st.caption(
-        "The map shows your starting point, numbered "
-        "destination stops, and the optimized geographic "
-        "visit sequence."
+    display_route(
+        plan
     )
 
-    route_map = (
-        build_optimized_route_map(
-            optimized_route,
-            profile.starting_point,
-        )
+    display_itinerary(
+        plan
     )
 
-    st_folium(
-        route_map,
-        height=560,
-        use_container_width=True,
-        returned_objects=[],
-    )
-
-    st.info(
-        "The connecting line represents the optimized "
-        "sequence between destination coordinates. "
-        "It is not a turn-by-turn road route."
-    )
-
-    st.caption(
-        "Base map data: OpenStreetMap contributors."
-    )
-
-
-def display_route_and_itinerary(
-    profile: TravellerProfile,
-    recommendations,
-) -> None:
-    """
-    Optimize the top recommended destinations, create
-    a feasible itinerary, display its interactive map,
-    enrich it with weather, and display its budget.
-    """
-
-    st.divider()
-
-    st.header(
-        "Optimized Trip Route"
-    )
-
-    route_candidates = (
-        recommendations
-        .head(ROUTE_CANDIDATE_COUNT)
-        .copy()
-    )
-
-    optimized_route = optimize_route(
-        route_candidates,
-        profile.starting_point,
-    )
-
-    optimized_distance = (
-        calculate_optimized_route_distance(
-            optimized_route
-        )
-    )
-
-    itinerary = generate_itinerary(
-        optimized_route,
-        profile.trip_days,
-    )
-
-    summary = itinerary_summary(
-        itinerary
-    )
-
-    route_col1, route_col2, route_col3, route_col4 = (
-        st.columns(4)
-    )
-
-    route_col1.metric(
-        "Route Candidates",
-        len(optimized_route),
-    )
-
-    route_col2.metric(
-        "Route Distance",
-        f"{optimized_distance:.1f} km",
-    )
-
-    route_col3.metric(
-        "Scheduled Places",
-        summary["scheduled_destinations"],
-    )
-
-    route_col4.metric(
-        "Days Used",
-        summary["days_used"],
-    )
-
-    st.caption(
-        "Route distance currently uses Haversine "
-        "great-circle distance between geographic "
-        "coordinates. It is a geographic distance "
-        "proxy, not driving-road distance."
-    )
-
-    route_names = (
-        optimized_route["name"]
-        .tolist()
-    )
-
-    route_text = (
-        profile.starting_point
-        + " → "
-        + " → ".join(route_names)
-    )
-
-    st.markdown(
-        "### Recommended Visit Order"
-    )
-
-    st.write(
-        route_text
-    )
-
-    route_display = optimized_route[
-        [
-            "route_order",
-            "name",
-            "district",
-            "category",
-            "distance_from_previous_km",
-        ]
-    ].copy()
-
-    route_display.columns = [
-        "Route Order",
-        "Destination",
-        "District",
-        "Category",
-        "Distance From Previous (km)",
-    ]
-
-    st.dataframe(
-        route_display,
-        use_container_width=True,
-        hide_index=True,
-    )
-
-    display_interactive_route_map(
-        profile,
-        optimized_route,
-    )
-
-    st.divider()
-
-    st.header(
-        "Day-by-Day Itinerary"
-    )
-
-    itinerary_col1, itinerary_col2, itinerary_col3 = (
-        st.columns(3)
-    )
-
-    itinerary_col1.metric(
-        "Scheduled Destinations",
-        summary[
-            "scheduled_destinations"
-        ],
-    )
-
-    itinerary_col2.metric(
-        "Total Activity Time",
-        (
-            f"{summary['total_activity_hours']:.1f} "
-            f"hours"
-        ),
-    )
-
-    itinerary_col3.metric(
-        "Unscheduled Destinations",
-        summary[
-            "unscheduled_destinations"
-        ],
-    )
-
-    scheduled_itinerary = itinerary[
-        itinerary["scheduled"]
-    ].copy()
-
-    if scheduled_itinerary.empty:
-        st.warning(
-            "No destinations could be scheduled "
-            "within the selected trip duration."
-        )
-    else:
-        for day in sorted(
-            scheduled_itinerary[
-                "itinerary_day"
-            ].dropna().unique()
-        ):
-            day_number = int(day)
-
-            day_plan = (
-                scheduled_itinerary[
-                    scheduled_itinerary[
-                        "itinerary_day"
-                    ]
-                    == day
-                ]
-                .sort_values(
-                    "visit_order_in_day"
-                )
-            )
-
-            day_hours = float(
-                day_plan[
-                    "recommended_duration_hours"
-                ].sum()
-            )
-
-            with st.expander(
-                f"Day {day_number} "
-                f"— {day_hours:.1f} activity hours",
-                expanded=True,
-            ):
-                for _, destination in (
-                    day_plan.iterrows()
-                ):
-                    st.markdown(
-                        f"### "
-                        f"{int(destination['visit_order_in_day'])}. "
-                        f"{destination['name']}"
-                    )
-
-                    detail_col1, detail_col2, detail_col3 = (
-                        st.columns(3)
-                    )
-
-                    detail_col1.write(
-                        f"**Category:** "
-                        f"{destination['category']}"
-                    )
-
-                    detail_col2.write(
-                        f"**Visit Duration:** "
-                        f"{destination['recommended_duration_hours']:.0f} "
-                        f"hours"
-                    )
-
-                    detail_col3.write(
-                        f"**Travel Distance:** "
-                        f"{destination['distance_from_previous_km']:.1f} "
-                        f"km"
-                    )
-
-                    st.write(
-                        f"**Location:** "
-                        f"{destination['district']} District, "
-                        f"{destination['province']} Province"
-                    )
-
-                    st.divider()
-
-    unscheduled = itinerary[
-        ~itinerary["scheduled"]
-    ].copy()
-
-    if not unscheduled.empty:
-        st.warning(
-            f"{len(unscheduled)} recommended "
-            f"destination(s) could not fit within "
-            f"the selected {profile.trip_days}-day "
-            f"trip while respecting the current "
-            f"8-hour daily activity limit."
-        )
-
-        unscheduled_display = unscheduled[
-            [
-                "name",
-                "category",
-                "recommended_duration_hours",
-                "current_stage_score",
-            ]
-        ].copy()
-
-        unscheduled_display.columns = [
-            "Destination",
-            "Category",
-            "Required Activity Hours",
-            "Recommendation Score",
-        ]
-
-        st.dataframe(
-            unscheduled_display,
-            use_container_width=True,
-            hide_index=True,
-        )
-
-    weather_itinerary = (
-        display_weather_intelligence(
-            profile,
-            itinerary,
-        )
+    display_weather_intelligence(
+        plan
     )
 
     display_budget_breakdown(
-        profile,
-        weather_itinerary,
+        plan
     )
 
 
@@ -1108,21 +1143,20 @@ def main() -> None:
 
     st.write(
         """
-        Plan a personalized Sri Lankan journey based
-        on your interests, budget, trip duration,
-        travel style, preferred destinations, live
-        weather conditions, and optimized route.
+        Generate a personalized Sri Lankan journey
+        using traveller interests, budget, travel style,
+        crowd preference, live weather intelligence,
+        geographic route efficiency and OR-Tools route
+        optimization.
         """
     )
 
     st.info(
-        "CeylonCompass V1 currently provides "
-        "explainable destination recommendations, "
-        "geospatial route optimization, "
-        "interactive route visualization, "
-        "day-by-day itinerary scheduling, "
-        "transparent trip budget estimation, and "
-        "live weather intelligence."
+        "CeylonCompass V1 uses one integrated planning "
+        "pipeline for recommendation, weather-aware "
+        "ranking, route optimization, itinerary "
+        "scheduling, interactive mapping and budget "
+        "estimation."
     )
 
     st.divider()
@@ -1131,81 +1165,97 @@ def main() -> None:
         "Plan Your Trip"
     )
 
-    col1, col2 = st.columns(2)
+    col1, col2 = (
+        st.columns(2)
+    )
 
     with col1:
-        starting_point = st.selectbox(
-            "Starting Point",
-            [
-                "Colombo",
-                "Kandy",
-                "Galle",
-                "Jaffna",
-                "Negombo",
-            ],
+        starting_point = (
+            st.selectbox(
+                "Starting Point",
+                [
+                    "Colombo",
+                    "Kandy",
+                    "Galle",
+                    "Jaffna",
+                    "Negombo",
+                ],
+            )
         )
 
-        trip_days = st.slider(
-            "Trip Duration (Days)",
-            min_value=1,
-            max_value=14,
-            value=5,
+        trip_days = (
+            st.slider(
+                "Trip Duration (Days)",
+                min_value=1,
+                max_value=14,
+                value=5,
+            )
         )
 
-        budget = st.number_input(
-            "Total Budget (USD)",
-            min_value=50,
-            max_value=5000,
-            value=500,
-            step=50,
+        budget = (
+            st.number_input(
+                "Total Budget (USD)",
+                min_value=50,
+                max_value=5000,
+                value=500,
+                step=50,
+            )
         )
 
     with col2:
-        travel_style = st.selectbox(
-            "Travel Style",
-            [
-                "Budget",
-                "Balanced",
-                "Comfort",
-            ],
+        travel_style = (
+            st.selectbox(
+                "Travel Style",
+                [
+                    "Budget",
+                    "Balanced",
+                    "Comfort",
+                ],
+            )
         )
 
-        crowd_preference = st.selectbox(
-            "Crowd Preference",
-            [
-                "No Preference",
-                "Prefer Less Crowded Places",
-                "Popular Tourist Places",
-            ],
+        crowd_preference = (
+            st.selectbox(
+                "Crowd Preference",
+                [
+                    "No Preference",
+                    "Prefer Less Crowded Places",
+                    "Popular Tourist Places",
+                ],
+            )
         )
 
-        transport = st.selectbox(
-            "Preferred Transport",
-            [
-                "Public Transport",
-                "Mixed Transport",
-                "Private Vehicle",
-            ],
+        transport = (
+            st.selectbox(
+                "Preferred Transport",
+                [
+                    "Public Transport",
+                    "Mixed Transport",
+                    "Private Vehicle",
+                ],
+            )
         )
 
     st.subheader(
         "Your Interests"
     )
 
-    interests = st.multiselect(
-        "Select one or more interests",
-        [
-            "Beach",
-            "Wildlife",
-            "Hiking",
-            "Nature",
-            "Culture",
-            "History",
-            "Adventure",
-        ],
-        default=[
-            "Nature",
-        ],
+    interests = (
+        st.multiselect(
+            "Select one or more interests",
+            [
+                "Beach",
+                "Wildlife",
+                "Hiking",
+                "Nature",
+                "Culture",
+                "History",
+                "Adventure",
+            ],
+            default=[
+                "Nature",
+            ],
+        )
     )
 
     st.divider()
@@ -1220,17 +1270,34 @@ def main() -> None:
                 "Please select at least one "
                 "travel interest."
             )
+
             return
 
         try:
-            profile = TravellerProfile(
-                starting_point=starting_point,
-                trip_days=trip_days,
-                budget_usd=float(budget),
-                travel_style=travel_style,
-                crowd_preference=crowd_preference,
-                transport=transport,
-                interests=tuple(interests),
+            profile = (
+                TravellerProfile(
+                    starting_point=(
+                        starting_point
+                    ),
+                    trip_days=(
+                        trip_days
+                    ),
+                    budget_usd=float(
+                        budget
+                    ),
+                    travel_style=(
+                        travel_style
+                    ),
+                    crowd_preference=(
+                        crowd_preference
+                    ),
+                    transport=(
+                        transport
+                    ),
+                    interests=tuple(
+                        interests
+                    ),
+                )
             )
 
             st.success(
@@ -1239,7 +1306,7 @@ def main() -> None:
             )
 
             st.subheader(
-                "Current Traveller Profile"
+                "Traveller Profile"
             )
 
             profile_col1, profile_col2, profile_col3 = (
@@ -1248,17 +1315,23 @@ def main() -> None:
 
             profile_col1.metric(
                 "Trip Duration",
-                f"{profile.trip_days} days",
+                (
+                    f"{profile.trip_days} days"
+                ),
             )
 
             profile_col2.metric(
                 "Total Budget",
-                f"${profile.budget_usd:.0f}",
+                (
+                    f"${profile.budget_usd:.0f}"
+                ),
             )
 
             profile_col3.metric(
                 "Daily Budget",
-                f"${profile.daily_budget():.2f}",
+                (
+                    f"${profile.daily_budget():.2f}"
+                ),
             )
 
             st.write(
@@ -1288,18 +1361,26 @@ def main() -> None:
 
             st.divider()
 
-            recommendations = (
-                display_recommendations(
-                    profile
+            with st.spinner(
+                "Generating recommendations, "
+                "retrieving weather, optimizing route "
+                "and building your itinerary..."
+            ):
+                plan = (
+                    generate_trip_plan(
+                        profile=profile,
+                        weather_fetcher=(
+                            get_cached_weather_forecast
+                        ),
+                    )
                 )
-            )
 
-            display_route_and_itinerary(
-                profile,
-                recommendations,
+            display_trip_plan(
+                plan
             )
 
         except (
+            TypeError,
             ValueError,
             RuntimeError,
         ) as error:
@@ -1310,11 +1391,10 @@ def main() -> None:
     st.divider()
 
     st.caption(
-        "CeylonCompass V1 • Explainable Travel "
-        "Recommendation, Route Optimization, "
-        "Interactive Mapping, Itinerary Planning, "
-        "Budget Estimation, and Weather Intelligence "
-        "for Sri Lanka"
+        "CeylonCompass V1 • Explainable Recommendation "
+        "• Weather-Aware Weighted Ranking "
+        "• Route Optimization • Interactive Mapping "
+        "• Itinerary Planning • Budget Estimation"
     )
 
 
