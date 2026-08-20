@@ -1,0 +1,31 @@
+scenario_id,segment,description,starting_point,trip_days,budget_usd,travel_style,crowd_preference,transport,interest_count,mean_preference_score,mean_final_score,unique_category_count,category_diversity_pct,budget_compliant,duration_compliant,scheduled_coverage_pct,weather_coverage_pct,mean_weather_score,route_valid,baseline_route_distance_km,optimized_route_distance_km,route_distance_saving_km,route_distance_saving_pct,optimized_not_worse
+E001,Beach,Budget beach traveller from Colombo,Colombo,4,180,Budget,Prefer Less Crowded Places,Public Transport,2,75.87,75.23,1,20.0,False,True,57.14,100.0,79.83,True,860.6,860.6,0.0,0.0,True
+E002,Beach,Popular coastal traveller from Galle,Galle,5,450,Balanced,Popular Tourist Places,Mixed Transport,2,76.59,86.0,2,40.0,True,True,71.43,100.0,83.96,True,420.43,420.12,0.31,0.07,True
+E003,Beach,Comfort coastal trip from Negombo,Negombo,7,950,Comfort,No Preference,Private Vehicle,3,75.85,81.23,2,40.0,True,True,100.0,100.0,83.27,True,500.02,500.02,0.0,0.0,True
+E004,Wildlife,Budget wildlife traveller from Colombo,Colombo,5,280,Budget,Prefer Less Crowded Places,Public Transport,2,77.98,81.7,2,40.0,True,True,71.43,100.0,74.2,True,552.55,515.09,37.46,6.78,True
+E005,Wildlife,Wildlife adventure traveller from Kandy,Kandy,6,600,Balanced,No Preference,Mixed Transport,3,95.24,90.01,2,40.0,True,True,85.71,100.0,82.22,True,452.23,438.97,13.26,2.93,True
+E006,Wildlife,Comfort wildlife traveller from Galle,Galle,8,1200,Comfort,Popular Tourist Places,Private Vehicle,2,84.16,85.24,2,40.0,True,True,100.0,100.0,84.16,True,478.08,450.41,27.67,5.79,True
+E007,Hiking,Budget hiking traveller from Kandy,Kandy,4,220,Budget,Prefer Less Crowded Places,Public Transport,3,92.79,89.32,3,60.0,True,True,57.14,100.0,83.3,True,197.02,194.34,2.68,1.36,True
+E008,Hiking,Active hiking trip from Colombo,Colombo,6,500,Balanced,No Preference,Mixed Transport,2,75.25,80.91,3,60.0,True,True,85.71,100.0,79.6,True,242.49,242.49,0.0,0.0,True
+E009,Hiking,Comfort mountain trip from N/A start proxy Kandy,Kandy,9,1300,Comfort,Prefer Less Crowded Places,Private Vehicle,2,75.89,81.68,3,60.0,True,True,100.0,100.0,80.03,True,165.53,154.33,11.2,6.77,True
+E010,Culture,Budget culture and history traveller from Jaffna,Jaffna,4,250,Budget,No Preference,Public Transport,2,91.75,91.37,2,40.0,True,True,71.43,100.0,86.58,True,417.21,417.21,-0.0,-0.0,True
+E011,Culture,Popular heritage traveller from Kandy,Kandy,5,500,Balanced,Popular Tourist Places,Mixed Transport,2,88.98,87.06,2,40.0,True,True,71.43,100.0,79.96,True,856.36,705.99,150.37,17.56,True
+E012,Culture,Comfort heritage tour from Colombo,Colombo,8,1100,Comfort,No Preference,Private Vehicle,3,88.15,89.47,2,40.0,True,True,100.0,100.0,79.47,True,694.07,571.37,122.7,17.68,True
+E013,Adventure,Budget adventure traveller from Galle,Galle,4,240,Budget,Prefer Less Crowded Places,Public Transport,2,71.17,79.6,3,60.0,True,True,57.14,100.0,78.5,True,225.54,225.54,-0.0,-0.0,True
+E014,Adventure,Mixed adventure traveller from Negombo,Negombo,6,550,Balanced,No Preference,Mixed Transport,3,94.37,90.22,3,60.0,True,True,85.71,100.0,78.43,True,253.78,251.37,2.41,0.95,True
+E015,Adventure,Comfort adventure traveller from Colombo,Colombo,8,1200,Comfort,Popular Tourist Places,Private Vehicle,2,78.61,83.56,4,80.0,True,True,100.0,100.0,74.93,True,463.92,408.3,55.62,11.99,True
+E016,Nature,Low-cost nature traveller from Jaffna,Jaffna,5,300,Budget,Prefer Less Crowded Places,Public Transport,1,59.7,73.19,3,60.0,True,True,71.43,100.0,86.14,True,436.0,436.0,0.0,0.0,True
+E017,Nature,Balanced nature traveller from Kandy,Kandy,7,650,Balanced,No Preference,Mixed Transport,2,85.76,87.4,1,20.0,True,True,100.0,100.0,80.91,True,476.95,450.79,26.16,5.48,True
+E018,Nature,Comfort nature traveller from Galle,Galle,10,1500,Comfort,Prefer Less Crowded Places,Private Vehicle,3,84.67,85.99,3,60.0,True,True,100.0,100.0,80.81,True,320.9,291.71,29.19,9.1,True
+E019,Mixed,Beach and culture traveller from Negombo,Negombo,5,420,Balanced,Popular Tourist Places,Mixed Transport,3,80.83,82.97,3,60.0,True,True,71.43,100.0,80.42,True,894.26,678.02,216.24,24.18,True
+E020,Mixed,Wildlife and history traveller from Jaffna,Jaffna,7,700,Balanced,No Preference,Private Vehicle,3,73.28,83.01,3,60.0,True,True,100.0,100.0,90.67,True,638.09,598.08,40.01,6.27,True
+E021,Mixed,Beach and wildlife traveller from Galle,Galle,6,480,Budget,Prefer Less Crowded Places,Mixed Transport,3,81.79,81.08,2,40.0,True,True,85.71,100.0,81.15,True,601.36,601.36,0.0,0.0,True
+E022,Mixed,Culture and hiking traveller from Kandy,Kandy,6,520,Balanced,Popular Tourist Places,Public Transport,3,83.33,86.63,2,40.0,True,True,100.0,100.0,77.44,True,415.55,414.92,0.63,0.15,True
+E023,Mixed,Nature and beach comfort traveller from Negombo,Negombo,9,1250,Comfort,No Preference,Private Vehicle,3,90.06,90.03,2,40.0,True,True,100.0,100.0,81.23,True,672.63,672.63,0.0,0.0,True
+E024,Mixed,History and adventure traveller from Jaffna,Jaffna,5,380,Budget,Prefer Less Crowded Places,Public Transport,3,80.72,84.25,3,60.0,True,True,100.0,100.0,75.64,True,291.19,291.19,0.0,0.0,True
+E025,Short Trip,Two-day Colombo nature escape,Colombo,2,160,Budget,No Preference,Public Transport,2,69.7,79.86,3,60.0,True,True,28.57,100.0,71.75,True,386.87,374.28,12.59,3.25,True
+E026,Short Trip,Three-day Galle coastal escape,Galle,3,300,Balanced,Popular Tourist Places,Mixed Transport,2,76.59,85.96,2,40.0,True,True,42.86,100.0,86.17,True,420.43,420.12,0.31,0.07,True
+E027,Short Trip,Three-day Jaffna heritage trip,Jaffna,3,260,Budget,Prefer Less Crowded Places,Public Transport,2,88.54,87.38,2,40.0,True,True,57.14,100.0,84.78,True,380.09,380.09,0.0,0.0,True
+E028,Long Trip,Extended island nature exploration from Negombo,Negombo,12,1400,Balanced,Prefer Less Crowded Places,Private Vehicle,4,97.08,90.0,3,60.0,True,True,100.0,100.0,74.41,True,347.85,300.35,47.5,13.66,True
+E029,Long Trip,Extended heritage and nature trip from Jaffna,Jaffna,14,1700,Comfort,No Preference,Private Vehicle,3,91.15,90.74,2,40.0,True,True,100.0,100.0,83.41,True,335.74,335.74,-0.0,-0.0,True
+E030,Long Trip,Extended mixed-interest trip from Negombo,Negombo,14,1600,Comfort,Popular Tourist Places,Private Vehicle,5,93.11,90.63,1,20.0,True,True,100.0,100.0,82.46,True,351.34,351.34,0.0,0.0,True

@@ -1,0 +1,10 @@
+segment,scenario_count,mean_preference_score,mean_final_score,scheduled_coverage_pct,category_diversity_pct,route_distance_saving_pct,budget_compliance_rate_pct
+Adventure,3,81.38,84.46,80.95,66.67,4.31,100.0
+Beach,3,76.1,80.82,76.19,33.33,0.02,66.67
+Culture,3,89.63,89.3,80.95,40.0,11.75,100.0
+Hiking,3,81.31,83.97,80.95,60.0,2.71,100.0
+Long Trip,3,93.78,90.46,100.0,40.0,4.55,100.0
+Mixed,6,81.67,84.66,92.86,50.0,5.1,100.0
+Nature,3,76.71,82.19,90.48,46.67,4.86,100.0
+Short Trip,3,78.28,84.4,42.86,46.67,1.11,100.0
+Wildlife,3,85.79,85.65,85.71,40.0,5.17,100.0
