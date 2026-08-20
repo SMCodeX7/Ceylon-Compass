@@ -1,8 +1,25 @@
 import streamlit as st
 
-from src.recommendation.explanations import explain_destination
-from src.recommendation.recommender import rank_destinations
-from src.recommendation.traveller_profile import TravellerProfile
+from src.itinerary.planner import (
+    generate_itinerary,
+    itinerary_summary,
+)
+from src.optimization.route_optimizer import (
+    calculate_optimized_route_distance,
+    optimize_route,
+)
+from src.recommendation.explanations import (
+    explain_destination,
+)
+from src.recommendation.recommender import (
+    rank_destinations,
+)
+from src.recommendation.traveller_profile import (
+    TravellerProfile,
+)
+
+
+ROUTE_CANDIDATE_COUNT = 7
 
 
 st.set_page_config(
@@ -13,15 +30,25 @@ st.set_page_config(
 )
 
 
-def display_recommendations(profile: TravellerProfile) -> None:
-    """Generate and display ranked destination recommendations."""
+def display_recommendations(
+    profile: TravellerProfile,
+):
+    """
+    Generate and display ranked destination
+    recommendations.
+
+    Returns the ranked recommendations so they can be
+    passed directly to route optimization.
+    """
 
     recommendations = rank_destinations(
         profile,
         top_n=10,
     )
 
-    st.subheader("Top Destination Recommendations")
+    st.subheader(
+        "Top Destination Recommendations"
+    )
 
     st.caption(
         "Current ranking combines traveller interests, "
@@ -58,14 +85,21 @@ def display_recommendations(profile: TravellerProfile) -> None:
         hide_index=True,
     )
 
-    st.subheader("Recommendation Details")
-
-    st.caption(
-        "Open a destination below to see its score breakdown, "
-        "recommendation reasons, and possible trade-offs."
+    st.subheader(
+        "Recommendation Details"
     )
 
-    for _, destination in recommendations.head(5).iterrows():
+    st.caption(
+        "Open a destination below to see its score "
+        "breakdown, recommendation reasons, and "
+        "possible trade-offs."
+    )
+
+    for _, destination in (
+        recommendations
+        .head(5)
+        .iterrows()
+    ):
         explanation = explain_destination(
             destination,
             profile,
@@ -76,7 +110,9 @@ def display_recommendations(profile: TravellerProfile) -> None:
             f"{destination['name']} "
             f"— {destination['current_stage_score']:.2f}%"
         ):
-            col1, col2, col3, col4 = st.columns(4)
+            col1, col2, col3, col4 = (
+                st.columns(4)
+            )
 
             col1.metric(
                 "Interest Match",
@@ -101,7 +137,8 @@ def display_recommendations(profile: TravellerProfile) -> None:
             st.divider()
 
             st.write(
-                f"**Category:** {destination['category']}"
+                f"**Category:** "
+                f"{destination['category']}"
             )
 
             st.write(
@@ -115,50 +152,339 @@ def display_recommendations(profile: TravellerProfile) -> None:
                 f"${destination['estimated_daily_cost_usd']:.0f}"
             )
 
+            st.write(
+                f"**Recommended Visit Duration:** "
+                f"{destination['recommended_duration_hours']:.0f} "
+                f"hours"
+            )
+
             st.divider()
 
-            st.markdown("### Why this destination matches you")
+            st.markdown(
+                "### Why this destination matches you"
+            )
 
-            for reason in explanation["reasons"]:
-                st.write(f"- {reason}")
-
-            if explanation["tradeoffs"]:
-                st.markdown("### Trade-offs to consider")
-
-                for tradeoff in explanation["tradeoffs"]:
-                    st.write(f"- {tradeoff}")
-            else:
-                st.success(
-                    "No major trade-offs were identified for your "
-                    "current traveller profile."
+            for reason in explanation[
+                "reasons"
+            ]:
+                st.write(
+                    f"- {reason}"
                 )
 
+            if explanation["tradeoffs"]:
+                st.markdown(
+                    "### Trade-offs to consider"
+                )
 
-def main() -> None:
-    st.title("\U0001F1F1\U0001F1F0 CeylonCompass")
+                for tradeoff in explanation[
+                    "tradeoffs"
+                ]:
+                    st.write(
+                        f"- {tradeoff}"
+                    )
+            else:
+                st.success(
+                    "No major trade-offs were identified "
+                    "for your current traveller profile."
+                )
 
-    st.subheader(
-        "Smart Sri Lanka Travel Recommendation & Route Optimization"
+    return recommendations
+
+
+def display_route_and_itinerary(
+    profile: TravellerProfile,
+    recommendations,
+) -> None:
+    """
+    Optimize the top recommended destinations and
+    create a feasible day-by-day itinerary.
+    """
+
+    st.divider()
+
+    st.header(
+        "Optimized Trip Route"
+    )
+
+    route_candidates = (
+        recommendations
+        .head(ROUTE_CANDIDATE_COUNT)
+        .copy()
+    )
+
+    optimized_route = optimize_route(
+        route_candidates,
+        profile.starting_point,
+    )
+
+    optimized_distance = (
+        calculate_optimized_route_distance(
+            optimized_route
+        )
+    )
+
+    itinerary = generate_itinerary(
+        optimized_route,
+        profile.trip_days,
+    )
+
+    summary = itinerary_summary(
+        itinerary
+    )
+
+    route_col1, route_col2, route_col3, route_col4 = (
+        st.columns(4)
+    )
+
+    route_col1.metric(
+        "Route Candidates",
+        len(optimized_route),
+    )
+
+    route_col2.metric(
+        "Route Distance",
+        f"{optimized_distance:.1f} km",
+    )
+
+    route_col3.metric(
+        "Scheduled Places",
+        summary["scheduled_destinations"],
+    )
+
+    route_col4.metric(
+        "Days Used",
+        summary["days_used"],
+    )
+
+    st.caption(
+        "Route distance currently uses Haversine "
+        "great-circle distance between geographic "
+        "coordinates. It is a geographic distance "
+        "proxy, not driving-road distance."
+    )
+
+    route_names = (
+        optimized_route["name"]
+        .tolist()
+    )
+
+    route_text = (
+        profile.starting_point
+        + " → "
+        + " → ".join(route_names)
+    )
+
+    st.markdown(
+        "### Recommended Visit Order"
     )
 
     st.write(
-        """
-        Plan a personalized Sri Lankan journey based on your interests,
-        budget, trip duration, travel style, and preferred destinations.
-        """
+        route_text
     )
 
-    st.info(
-        "CeylonCompass V1 currently provides explainable destination "
-        "recommendations using interest similarity, budget compatibility, "
-        "and crowd preference. Weather intelligence, route optimization, "
-        "itinerary generation, and interactive maps will be added in "
-        "the next development stages."
+    route_display = optimized_route[
+        [
+            "route_order",
+            "name",
+            "district",
+            "category",
+            "distance_from_previous_km",
+        ]
+    ].copy()
+
+    route_display.columns = [
+        "Route Order",
+        "Destination",
+        "District",
+        "Category",
+        "Distance From Previous (km)",
+    ]
+
+    st.dataframe(
+        route_display,
+        use_container_width=True,
+        hide_index=True,
     )
 
     st.divider()
 
-    st.header("Plan Your Trip")
+    st.header(
+        "Day-by-Day Itinerary"
+    )
+
+    itinerary_col1, itinerary_col2, itinerary_col3 = (
+        st.columns(3)
+    )
+
+    itinerary_col1.metric(
+        "Scheduled Destinations",
+        summary[
+            "scheduled_destinations"
+        ],
+    )
+
+    itinerary_col2.metric(
+        "Total Activity Time",
+        (
+            f"{summary['total_activity_hours']:.1f} "
+            f"hours"
+        ),
+    )
+
+    itinerary_col3.metric(
+        "Unscheduled Destinations",
+        summary[
+            "unscheduled_destinations"
+        ],
+    )
+
+    scheduled_itinerary = itinerary[
+        itinerary["scheduled"]
+    ].copy()
+
+    if scheduled_itinerary.empty:
+        st.warning(
+            "No destinations could be scheduled "
+            "within the selected trip duration."
+        )
+    else:
+        for day in sorted(
+            scheduled_itinerary[
+                "itinerary_day"
+            ].dropna().unique()
+        ):
+            day_number = int(day)
+
+            day_plan = (
+                scheduled_itinerary[
+                    scheduled_itinerary[
+                        "itinerary_day"
+                    ]
+                    == day
+                ]
+                .sort_values(
+                    "visit_order_in_day"
+                )
+            )
+
+            day_hours = float(
+                day_plan[
+                    "recommended_duration_hours"
+                ].sum()
+            )
+
+            with st.expander(
+                f"Day {day_number} "
+                f"— {day_hours:.1f} activity hours",
+                expanded=True,
+            ):
+                for _, destination in (
+                    day_plan.iterrows()
+                ):
+                    st.markdown(
+                        f"### "
+                        f"{int(destination['visit_order_in_day'])}. "
+                        f"{destination['name']}"
+                    )
+
+                    detail_col1, detail_col2, detail_col3 = (
+                        st.columns(3)
+                    )
+
+                    detail_col1.write(
+                        f"**Category:** "
+                        f"{destination['category']}"
+                    )
+
+                    detail_col2.write(
+                        f"**Visit Duration:** "
+                        f"{destination['recommended_duration_hours']:.0f} "
+                        f"hours"
+                    )
+
+                    detail_col3.write(
+                        f"**Travel Distance:** "
+                        f"{destination['distance_from_previous_km']:.1f} "
+                        f"km"
+                    )
+
+                    st.write(
+                        f"**Location:** "
+                        f"{destination['district']} District, "
+                        f"{destination['province']} Province"
+                    )
+
+                    st.divider()
+
+    unscheduled = itinerary[
+        ~itinerary["scheduled"]
+    ].copy()
+
+    if not unscheduled.empty:
+        st.warning(
+            f"{len(unscheduled)} recommended "
+            f"destination(s) could not fit within "
+            f"the selected {profile.trip_days}-day "
+            f"trip while respecting the current "
+            f"8-hour daily activity limit."
+        )
+
+        unscheduled_display = unscheduled[
+            [
+                "name",
+                "category",
+                "recommended_duration_hours",
+                "current_stage_score",
+            ]
+        ].copy()
+
+        unscheduled_display.columns = [
+            "Destination",
+            "Category",
+            "Required Activity Hours",
+            "Recommendation Score",
+        ]
+
+        st.dataframe(
+            unscheduled_display,
+            use_container_width=True,
+            hide_index=True,
+        )
+
+
+def main() -> None:
+    st.title(
+        "\U0001F1F1\U0001F1F0 CeylonCompass"
+    )
+
+    st.subheader(
+        "Smart Sri Lanka Travel Recommendation "
+        "& Route Optimization"
+    )
+
+    st.write(
+        """
+        Plan a personalized Sri Lankan journey based
+        on your interests, budget, trip duration,
+        travel style, and preferred destinations.
+        """
+    )
+
+    st.info(
+        "CeylonCompass V1 currently provides "
+        "explainable destination recommendations, "
+        "geospatial route optimization, and "
+        "day-by-day itinerary scheduling. "
+        "Weather intelligence, full trip budget "
+        "modelling, and interactive maps will be "
+        "added in the next development stages."
+    )
+
+    st.divider()
+
+    st.header(
+        "Plan Your Trip"
+    )
 
     col1, col2 = st.columns(2)
 
@@ -217,7 +543,9 @@ def main() -> None:
             ],
         )
 
-    st.subheader("Your Interests")
+    st.subheader(
+        "Your Interests"
+    )
 
     interests = st.multiselect(
         "Select one or more interests",
@@ -230,7 +558,9 @@ def main() -> None:
             "History",
             "Adventure",
         ],
-        default=["Nature"],
+        default=[
+            "Nature",
+        ],
     )
 
     st.divider()
@@ -242,7 +572,8 @@ def main() -> None:
     ):
         if not interests:
             st.warning(
-                "Please select at least one travel interest."
+                "Please select at least one "
+                "travel interest."
             )
             return
 
@@ -258,12 +589,17 @@ def main() -> None:
             )
 
             st.success(
-                "Traveller profile processed successfully."
+                "Traveller profile processed "
+                "successfully."
             )
 
-            st.subheader("Current Traveller Profile")
+            st.subheader(
+                "Current Traveller Profile"
+            )
 
-            profile_col1, profile_col2, profile_col3 = st.columns(3)
+            profile_col1, profile_col2, profile_col3 = (
+                st.columns(3)
+            )
 
             profile_col1.metric(
                 "Trip Duration",
@@ -307,16 +643,31 @@ def main() -> None:
 
             st.divider()
 
-            display_recommendations(profile)
+            recommendations = (
+                display_recommendations(
+                    profile
+                )
+            )
 
-        except ValueError as error:
-            st.error(str(error))
+            display_route_and_itinerary(
+                profile,
+                recommendations,
+            )
+
+        except (
+            ValueError,
+            RuntimeError,
+        ) as error:
+            st.error(
+                str(error)
+            )
 
     st.divider()
 
     st.caption(
-        "CeylonCompass V1 \u2022 Explainable Travel Recommendation "
-        "and Route Optimization for Sri Lanka"
+        "CeylonCompass V1 • Explainable Travel "
+        "Recommendation, Route Optimization, "
+        "and Itinerary Planning for Sri Lanka"
     )
 
 
