@@ -1,5 +1,6 @@
 import streamlit as st
 
+from src.recommendation.explanations import explain_destination
 from src.recommendation.recommender import rank_destinations
 from src.recommendation.traveller_profile import TravellerProfile
 
@@ -59,7 +60,17 @@ def display_recommendations(profile: TravellerProfile) -> None:
 
     st.subheader("Recommendation Details")
 
+    st.caption(
+        "Open a destination below to see its score breakdown, "
+        "recommendation reasons, and possible trade-offs."
+    )
+
     for _, destination in recommendations.head(5).iterrows():
+        explanation = explain_destination(
+            destination,
+            profile,
+        )
+
         with st.expander(
             f"#{int(destination['recommendation_rank'])} "
             f"{destination['name']} "
@@ -87,6 +98,8 @@ def display_recommendations(profile: TravellerProfile) -> None:
                 f"{destination['current_stage_score']:.1f}%",
             )
 
+            st.divider()
+
             st.write(
                 f"**Category:** {destination['category']}"
             )
@@ -102,15 +115,22 @@ def display_recommendations(profile: TravellerProfile) -> None:
                 f"${destination['estimated_daily_cost_usd']:.0f}"
             )
 
-            if destination["budget_compatible"]:
-                st.success(
-                    "This destination is within the traveller's "
-                    "current daily budget."
-                )
+            st.divider()
+
+            st.markdown("### Why this destination matches you")
+
+            for reason in explanation["reasons"]:
+                st.write(f"- {reason}")
+
+            if explanation["tradeoffs"]:
+                st.markdown("### Trade-offs to consider")
+
+                for tradeoff in explanation["tradeoffs"]:
+                    st.write(f"- {tradeoff}")
             else:
-                st.warning(
-                    "This destination is above the traveller's "
-                    "current daily budget."
+                st.success(
+                    "No major trade-offs were identified for your "
+                    "current traveller profile."
                 )
 
 
@@ -129,10 +149,11 @@ def main() -> None:
     )
 
     st.info(
-        "CeylonCompass V1 combines explainable destination "
-        "recommendation with budget-aware and crowd-aware ranking. "
-        "Weather intelligence, route optimization, itinerary generation, "
-        "and interactive maps will be added in the next stages."
+        "CeylonCompass V1 currently provides explainable destination "
+        "recommendations using interest similarity, budget compatibility, "
+        "and crowd preference. Weather intelligence, route optimization, "
+        "itinerary generation, and interactive maps will be added in "
+        "the next development stages."
     )
 
     st.divider()
