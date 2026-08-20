@@ -1,5 +1,10 @@
 import streamlit as st
 
+from src.budget.estimator import (
+    TRANSPORT_COST_PER_KM,
+    TRAVEL_STYLE_FACTORS,
+    estimate_trip_budget,
+)
 from src.itinerary.planner import (
     generate_itinerary,
     itinerary_summary,
@@ -191,13 +196,162 @@ def display_recommendations(
     return recommendations
 
 
+def display_budget_breakdown(
+    profile: TravellerProfile,
+    itinerary,
+) -> None:
+    """
+    Display the estimated trip budget for the
+    scheduled itinerary.
+    """
+
+    budget = estimate_trip_budget(
+        itinerary=itinerary,
+        total_budget_usd=profile.budget_usd,
+        travel_style=profile.travel_style,
+        transport=profile.transport,
+    )
+
+    st.divider()
+
+    st.header(
+        "Estimated Trip Budget"
+    )
+
+    budget_col1, budget_col2, budget_col3, budget_col4 = (
+        st.columns(4)
+    )
+
+    budget_col1.metric(
+        "Available Budget",
+        f"${budget['total_budget_usd']:.2f}",
+    )
+
+    budget_col2.metric(
+        "Destination Cost",
+        f"${budget['destination_cost_usd']:.2f}",
+    )
+
+    budget_col3.metric(
+        "Transport Cost",
+        f"${budget['transport_cost_usd']:.2f}",
+    )
+
+    budget_col4.metric(
+        "Estimated Total",
+        f"${budget['estimated_total_cost_usd']:.2f}",
+    )
+
+    budget_used_percent = (
+        budget["estimated_total_cost_usd"]
+        / budget["total_budget_usd"]
+        * 100
+    )
+
+    st.write(
+        f"**Estimated Budget Used:** "
+        f"{budget_used_percent:.1f}%"
+    )
+
+    progress_value = min(
+        budget_used_percent / 100,
+        1.0,
+    )
+
+    st.progress(
+        progress_value
+    )
+
+    if budget["within_budget"]:
+        st.success(
+            f"Estimated trip cost is within budget. "
+            f"Approximately "
+            f"${budget['budget_difference_usd']:.2f} "
+            f"remains available."
+        )
+    else:
+        amount_over = abs(
+            budget[
+                "budget_difference_usd"
+            ]
+        )
+
+        st.error(
+            f"Estimated trip cost exceeds the selected "
+            f"budget by approximately "
+            f"${amount_over:.2f}."
+        )
+
+    style_factor = (
+        TRAVEL_STYLE_FACTORS[
+            profile.travel_style
+        ]
+    )
+
+    transport_rate = (
+        TRANSPORT_COST_PER_KM[
+            profile.transport
+        ]
+    )
+
+    with st.expander(
+        "How this budget estimate is calculated"
+    ):
+        st.write(
+            f"**Travel Style:** "
+            f"{profile.travel_style}"
+        )
+
+        st.write(
+            f"**Travel Style Cost Factor:** "
+            f"{style_factor:.2f}"
+        )
+
+        st.write(
+            f"**Transport Preference:** "
+            f"{profile.transport}"
+        )
+
+        st.write(
+            f"**Transport Cost Assumption:** "
+            f"${transport_rate:.2f} per km"
+        )
+
+        st.write(
+            """
+            Destination costs are estimated using each
+            destination's daily cost, the recommended
+            visit duration, and the selected travel-style
+            factor.
+            """
+        )
+
+        st.write(
+            """
+            Transport cost is currently estimated using
+            the Haversine geographic route-distance proxy
+            multiplied by the selected transport-rate
+            assumption.
+            """
+        )
+
+        st.warning(
+            "These values are transparent V1 modelling "
+            "assumptions rather than guaranteed market "
+            "prices. The estimate does not currently "
+            "include international flights, visas, "
+            "shopping, insurance, or other personal "
+            "expenses."
+        )
+
+
 def display_route_and_itinerary(
     profile: TravellerProfile,
     recommendations,
 ) -> None:
     """
-    Optimize the top recommended destinations and
-    create a feasible day-by-day itinerary.
+    Optimize the top recommended destinations, create
+    a feasible itinerary, and display its budget.
     """
 
     st.divider()
@@ -451,6 +605,11 @@ def display_route_and_itinerary(
             hide_index=True,
         )
 
+    display_budget_breakdown(
+        profile,
+        itinerary,
+    )
+
 
 def main() -> None:
     st.title(
@@ -473,11 +632,11 @@ def main() -> None:
     st.info(
         "CeylonCompass V1 currently provides "
         "explainable destination recommendations, "
-        "geospatial route optimization, and "
-        "day-by-day itinerary scheduling. "
-        "Weather intelligence, full trip budget "
-        "modelling, and interactive maps will be "
-        "added in the next development stages."
+        "geospatial route optimization, "
+        "day-by-day itinerary scheduling, and "
+        "transparent trip budget estimation. "
+        "Weather intelligence and interactive maps "
+        "will be added in the next development stages."
     )
 
     st.divider()
@@ -667,7 +826,8 @@ def main() -> None:
     st.caption(
         "CeylonCompass V1 • Explainable Travel "
         "Recommendation, Route Optimization, "
-        "and Itinerary Planning for Sri Lanka"
+        "Itinerary Planning, and Budget Estimation "
+        "for Sri Lanka"
     )
 
 
