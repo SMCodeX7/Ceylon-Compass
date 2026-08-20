@@ -35,7 +35,10 @@ def calculate_preference_similarity(
     required_columns = set(INTERESTS)
 
     if not required_columns.issubset(destinations.columns):
-        missing = required_columns - set(destinations.columns)
+        missing = (
+            required_columns
+            - set(destinations.columns)
+        )
 
         raise ValueError(
             "Destination data is missing interest columns: "
@@ -63,7 +66,8 @@ def calculate_preference_similarity(
     results["preference_similarity"] = similarities
 
     results["preference_score"] = (
-        results["preference_similarity"] * 100
+        results["preference_similarity"]
+        * 100
     ).round(2)
 
     return results
@@ -74,13 +78,14 @@ def calculate_budget_scores(
     profile: TravellerProfile,
 ) -> pd.DataFrame:
     """
-    Calculate destination affordability relative to the
-    traveller's available daily budget.
+    Calculate destination affordability relative to
+    the traveller's available daily budget.
 
     A destination within the daily budget receives 100.
 
-    Destinations above the daily budget receive a gradually
-    decreasing score based on the affordability ratio.
+    Destinations above the daily budget receive a
+    gradually decreasing score based on the
+    affordability ratio.
     """
 
     results = destinations.copy()
@@ -88,16 +93,20 @@ def calculate_budget_scores(
     daily_budget = profile.daily_budget()
 
     destination_costs = (
-        results["estimated_daily_cost_usd"]
+        results[
+            "estimated_daily_cost_usd"
+        ]
         .astype(float)
     )
 
     affordability_ratio = (
-        daily_budget / destination_costs
+        daily_budget
+        / destination_costs
     )
 
     results["budget_compatible"] = (
-        destination_costs <= daily_budget
+        destination_costs
+        <= daily_budget
     )
 
     results["budget_score"] = (
@@ -115,8 +124,8 @@ def calculate_crowd_scores(
     profile: TravellerProfile,
 ) -> pd.DataFrame:
     """
-    Calculate compatibility between destination crowd level
-    and the traveller's crowd preference.
+    Calculate compatibility between destination crowd
+    level and the traveller's crowd preference.
 
     crowd_level:
         1 = very low crowd
@@ -130,7 +139,10 @@ def calculate_crowd_scores(
         .astype(float)
     )
 
-    if profile.crowd_preference == "No Preference":
+    if (
+        profile.crowd_preference
+        == "No Preference"
+    ):
         crowd_scores = pd.Series(
             100.0,
             index=results.index,
@@ -162,7 +174,9 @@ def calculate_crowd_scores(
             f"{profile.crowd_preference}"
         )
 
-    results["crowd_score"] = crowd_scores.round(2)
+    results["crowd_score"] = (
+        crowd_scores.round(2)
+    )
 
     return results
 
@@ -172,18 +186,20 @@ def calculate_current_stage_scores(
     profile: TravellerProfile,
 ) -> pd.DataFrame:
     """
-    Calculate the current recommendation score using the
-    components implemented so far.
+    Calculate the current recommendation score using
+    the components implemented so far.
 
     Current components:
         45% preference similarity
         20% budget compatibility
         10% crowd compatibility
 
-    Weather and route-efficiency components are added later.
+    Weather and route-efficiency components will be
+    added later.
 
-    Because the available weights currently total 0.75,
-    the partial weighted result is normalized back to 0-100.
+    Because the available weights currently total
+    0.75, the partial weighted result is normalized
+    back to 0-100.
     """
 
     results = calculate_preference_similarity(
@@ -224,8 +240,14 @@ def rank_destinations(
     data_path: Path = DATA_PATH,
 ) -> pd.DataFrame:
     """
-    Rank destinations using the recommendation components
-    currently implemented by CeylonCompass.
+    Rank destinations using the recommendation
+    components currently implemented by
+    CeylonCompass.
+
+    Geographic and itinerary-related fields are
+    retained so ranked destinations can be passed
+    directly into later route optimization and
+    itinerary modules.
     """
 
     if top_n < 1:
@@ -233,7 +255,9 @@ def rank_destinations(
             "top_n must be at least 1."
         )
 
-    destinations = validate_dataset(data_path)
+    destinations = validate_dataset(
+        data_path
+    )
 
     scored = calculate_current_stage_scores(
         destinations,
@@ -267,12 +291,16 @@ def rank_destinations(
         "name",
         "district",
         "province",
+        "latitude",
+        "longitude",
         "category",
         *INTERESTS,
         "estimated_daily_cost_usd",
+        "recommended_duration_hours",
         "crowd_level",
         "fitness_requirement",
         "family_suitability",
+        "best_months",
         "preference_similarity",
         "preference_score",
         "budget_score",
@@ -281,7 +309,10 @@ def rank_destinations(
         "current_stage_score",
     ]
 
-    return ranked[columns].head(top_n)
+    return (
+        ranked[columns]
+        .head(top_n)
+    )
 
 
 if __name__ == "__main__":
@@ -290,7 +321,9 @@ if __name__ == "__main__":
         trip_days=6,
         budget_usd=500,
         travel_style="Budget",
-        crowd_preference="Prefer Less Crowded Places",
+        crowd_preference=(
+            "Prefer Less Crowded Places"
+        ),
         transport="Public Transport",
         interests=(
             "Hiking",
@@ -309,6 +342,8 @@ if __name__ == "__main__":
             [
                 "recommendation_rank",
                 "name",
+                "latitude",
+                "longitude",
                 "estimated_daily_cost_usd",
                 "preference_score",
                 "budget_score",
