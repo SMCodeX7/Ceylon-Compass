@@ -22,9 +22,17 @@ from src.recommendation.recommender import (
 from src.recommendation.traveller_profile import (
     TravellerProfile,
 )
+from src.weather.client import (
+    fetch_weather_forecast,
+)
+from src.weather.scoring import (
+    score_weather_forecast,
+    weather_suitability_label,
+)
 
 
 ROUTE_CANDIDATE_COUNT = 7
+WEATHER_CACHE_TTL_SECONDS = 1800
 
 
 st.set_page_config(
@@ -33,6 +41,30 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+
+@st.cache_data(
+    ttl=WEATHER_CACHE_TTL_SECONDS,
+    show_spinner=False,
+)
+def get_cached_weather_forecast(
+    latitude: float,
+    longitude: float,
+    forecast_days: int,
+):
+    """
+    Retrieve and temporarily cache Open-Meteo
+    forecast data.
+
+    Caching prevents unnecessary repeated API calls
+    when Streamlit reruns the application.
+    """
+
+    return fetch_weather_forecast(
+        latitude=latitude,
+        longitude=longitude,
+        forecast_days=forecast_days,
+    )
 
 
 def display_recommendations(
@@ -57,7 +89,10 @@ def display_recommendations(
 
     st.caption(
         "Current ranking combines traveller interests, "
-        "budget compatibility, and crowd preference."
+        "budget compatibility, and crowd preference. "
+        "Live weather is currently shown separately "
+        "and will be added to the final ranking score "
+        "during full-system integration."
     )
 
     display_df = recommendations[
@@ -194,6 +229,393 @@ def display_recommendations(
                 )
 
     return recommendations
+
+
+def enrich_itinerary_with_weather(
+    profile: TravellerProfile,
+    itinerary,
+):
+    """
+    Attach destination-specific live forecast data
+    to scheduled itinerary rows.
+
+    Itinerary Day 1 uses forecast day 1, Day 2 uses
+    forecast day 2, and so on.
+
+    Weather API failures are isolated so that the
+    rest of the trip planner remains usable.
+    """
+
+    weather_itinerary = itinerary.copy()
+
+    weather_itinerary[
+        "weather_available"
+    ] = False
+
+    weather_itinerary[
+        "weather_date"
+    ] = None
+
+    weather_itinerary[
+        "weather_description"
+    ] = None
+
+    weather_itinerary[
+        "weather_temperature_max_c"
+    ] = None
+
+    weather_itinerary[
+        "weather_temperature_min_c"
+    ] = None
+
+    weather_itinerary[
+        "weather_rain_probability"
+    ] = None
+
+    weather_itinerary[
+        "weather_precipitation_mm"
+    ] = None
+
+    weather_itinerary[
+        "weather_score"
+    ] = None
+
+    weather_itinerary[
+        "weather_suitability"
+    ] = None
+
+    forecast_days = min(
+        profile.trip_days,
+        16,
+    )
+
+    for index, destination in (
+        weather_itinerary[
+            weather_itinerary["scheduled"]
+        ].iterrows()
+    ):
+        day_number = int(
+            destination[
+                "itinerary_day"
+            ]
+        )
+
+        if day_number > forecast_days:
+            continue
+
+        try:
+            raw_forecast = (
+                get_cached_weather_forecast(
+                    float(
+                        destination[
+                            "latitude"
+                        ]
+                    ),
+                    float(
+                        destination[
+                            "longitude"
+                        ]
+                    ),
+                    forecast_days,
+                )
+            )
+
+            scored_forecast = (
+                score_weather_forecast(
+                    raw_forecast
+                )
+            )
+
+            if (
+                day_number
+                > len(scored_forecast)
+            ):
+                continue
+
+            weather = (
+                scored_forecast.iloc[
+                    day_number - 1
+                ]
+            )
+
+            weather_itinerary.at[
+                index,
+                "weather_available",
+            ] = True
+
+            weather_itinerary.at[
+                index,
+                "weather_date",
+            ] = weather[
+                "date"
+            ].strftime(
+                "%Y-%m-%d"
+            )
+
+            weather_itinerary.at[
+                index,
+                "weather_description",
+            ] = weather[
+                "weather_description"
+            ]
+
+            weather_itinerary.at[
+                index,
+                "weather_temperature_max_c",
+            ] = float(
+                weather[
+                    "temperature_max_c"
+                ]
+            )
+
+            weather_itinerary.at[
+                index,
+                "weather_temperature_min_c",
+            ] = float(
+                weather[
+                    "temperature_min_c"
+                ]
+            )
+
+            weather_itinerary.at[
+                index,
+                "weather_rain_probability",
+            ] = float(
+                weather[
+                    "precipitation_probability_max"
+                ]
+            )
+
+            weather_itinerary.at[
+                index,
+                "weather_precipitation_mm",
+            ] = float(
+                weather[
+                    "precipitation_sum_mm"
+                ]
+            )
+
+            weather_itinerary.at[
+                index,
+                "weather_score",
+            ] = float(
+                weather[
+                    "weather_score"
+                ]
+            )
+
+            weather_itinerary.at[
+                index,
+                "weather_suitability",
+            ] = weather[
+                "weather_suitability"
+            ]
+
+        except (
+            RuntimeError,
+            ValueError,
+        ):
+            continue
+
+    return weather_itinerary
+
+
+def display_weather_intelligence(
+    profile: TravellerProfile,
+    itinerary,
+):
+    """
+    Fetch, score, and display destination-level
+    weather intelligence for the itinerary.
+    """
+
+    st.divider()
+
+    st.header(
+        "Live Weather Intelligence"
+    )
+
+    st.caption(
+        "Forecasts are retrieved from Open-Meteo "
+        "using each scheduled destination's latitude "
+        "and longitude. Weather suitability is a "
+        "CeylonCompass planning score from 0 to 100."
+    )
+
+    with st.spinner(
+        "Retrieving destination weather forecasts..."
+    ):
+        weather_itinerary = (
+            enrich_itinerary_with_weather(
+                profile,
+                itinerary,
+            )
+        )
+
+    scheduled = weather_itinerary[
+        weather_itinerary["scheduled"]
+    ].copy()
+
+    available = scheduled[
+        scheduled[
+            "weather_available"
+        ]
+    ].copy()
+
+    unavailable_count = (
+        len(scheduled)
+        - len(available)
+    )
+
+    if available.empty:
+        st.warning(
+            "Live weather data is currently unavailable. "
+            "The recommendation, route, itinerary, and "
+            "budget results remain usable."
+        )
+
+        return weather_itinerary
+
+    average_weather_score = float(
+        available[
+            "weather_score"
+        ].astype(float).mean()
+    )
+
+    overall_label = (
+        weather_suitability_label(
+            average_weather_score
+        )
+    )
+
+    best_index = (
+        available[
+            "weather_score"
+        ].astype(float).idxmax()
+    )
+
+    best_destination = (
+        available.loc[
+            best_index
+        ]
+    )
+
+    weather_col1, weather_col2, weather_col3, weather_col4 = (
+        st.columns(4)
+    )
+
+    weather_col1.metric(
+        "Forecast Coverage",
+        f"{len(available)}/{len(scheduled)} places",
+    )
+
+    weather_col2.metric(
+        "Average Weather Score",
+        f"{average_weather_score:.1f}%",
+    )
+
+    weather_col3.metric(
+        "Overall Suitability",
+        overall_label,
+    )
+
+    weather_col4.metric(
+        "Best Weather Stop",
+        best_destination[
+            "name"
+        ],
+    )
+
+    if unavailable_count > 0:
+        st.warning(
+            f"Weather data could not be retrieved for "
+            f"{unavailable_count} scheduled "
+            f"destination(s)."
+        )
+
+    st.markdown(
+        "### Forecast by Scheduled Destination"
+    )
+
+    weather_display = available[
+        [
+            "itinerary_day",
+            "name",
+            "weather_date",
+            "weather_description",
+            "weather_temperature_max_c",
+            "weather_temperature_min_c",
+            "weather_rain_probability",
+            "weather_precipitation_mm",
+            "weather_score",
+            "weather_suitability",
+        ]
+    ].copy()
+
+    weather_display.columns = [
+        "Day",
+        "Destination",
+        "Forecast Date",
+        "Condition",
+        "Max Temp (°C)",
+        "Min Temp (°C)",
+        "Rain Probability (%)",
+        "Rainfall (mm)",
+        "Weather Score",
+        "Suitability",
+    ]
+
+    st.dataframe(
+        weather_display,
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.markdown(
+        "### Weather Notes"
+    )
+
+    for _, destination in (
+        available.iterrows()
+    ):
+        score = float(
+            destination[
+                "weather_score"
+            ]
+        )
+
+        rain_probability = float(
+            destination[
+                "weather_rain_probability"
+            ]
+        )
+
+        st.write(
+            f"**Day "
+            f"{int(destination['itinerary_day'])} — "
+            f"{destination['name']}:** "
+            f"{destination['weather_description']}, "
+            f"{score:.1f}% suitability, "
+            f"{rain_probability:.0f}% maximum "
+            f"precipitation probability."
+        )
+
+    st.info(
+        "Weather currently provides planning context "
+        "only. It does not yet modify destination "
+        "ranking or route order. The planned final "
+        "weather component will contribute 15% of the "
+        "full recommendation score during system "
+        "integration."
+    )
+
+    st.caption(
+        "Weather data: Open-Meteo. Forecasts can "
+        "change and should be rechecked close to "
+        "travel time."
+    )
+
+    return weather_itinerary
 
 
 def display_budget_breakdown(
@@ -351,7 +773,8 @@ def display_route_and_itinerary(
 ) -> None:
     """
     Optimize the top recommended destinations, create
-    a feasible itinerary, and display its budget.
+    a feasible itinerary, enrich it with weather, and
+    display its estimated budget.
     """
 
     st.divider()
@@ -605,9 +1028,16 @@ def display_route_and_itinerary(
             hide_index=True,
         )
 
+    weather_itinerary = (
+        display_weather_intelligence(
+            profile,
+            itinerary,
+        )
+    )
+
     display_budget_breakdown(
         profile,
-        itinerary,
+        weather_itinerary,
     )
 
 
@@ -625,7 +1055,8 @@ def main() -> None:
         """
         Plan a personalized Sri Lankan journey based
         on your interests, budget, trip duration,
-        travel style, and preferred destinations.
+        travel style, preferred destinations, and
+        live weather conditions.
         """
     )
 
@@ -633,10 +1064,10 @@ def main() -> None:
         "CeylonCompass V1 currently provides "
         "explainable destination recommendations, "
         "geospatial route optimization, "
-        "day-by-day itinerary scheduling, and "
-        "transparent trip budget estimation. "
-        "Weather intelligence and interactive maps "
-        "will be added in the next development stages."
+        "day-by-day itinerary scheduling, "
+        "transparent trip budget estimation, and "
+        "live weather intelligence. Interactive maps "
+        "will be added in the next development stage."
     )
 
     st.divider()
@@ -826,8 +1257,8 @@ def main() -> None:
     st.caption(
         "CeylonCompass V1 • Explainable Travel "
         "Recommendation, Route Optimization, "
-        "Itinerary Planning, and Budget Estimation "
-        "for Sri Lanka"
+        "Itinerary Planning, Budget Estimation, "
+        "and Weather Intelligence for Sri Lanka"
     )
 
 
