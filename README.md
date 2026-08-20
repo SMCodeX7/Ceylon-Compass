@@ -2,6 +2,11 @@
 
 ### Smart Sri Lanka Travel Recommendation & Route Optimization Platform
 
+### 🌐 Live Demo
+
+**Try CeylonCompass:**  
+[https://sm-ceylon-compass.streamlit.app/](https://sm-ceylon-compass.streamlit.app/)
+
 CeylonCompass is a data-driven travel planning application that recommends Sri Lankan destinations based on traveller preferences, budget, crowd preference, weather conditions and geographic efficiency.
 
 It then optimizes the travel sequence, creates a day-by-day itinerary, estimates the trip budget and visualizes the journey on an interactive map.
@@ -16,13 +21,13 @@ The project combines **recommendation systems, geospatial analysis, route optimi
 
 Travellers can configure:
 
-- starting location
-- number of travel days
-- total budget
-- travel style
-- crowd preference
-- transport method
-- travel interests
+- Starting location
+- Number of travel days
+- Total budget
+- Travel style
+- Crowd preference
+- Transport method
+- Travel interests
 
 ![Traveller Profile](assets/screenshots/01-traveller_profile.png)
 
@@ -30,11 +35,11 @@ Travellers can configure:
 
 ## Destination Recommendations
 
-CeylonCompass ranks destinations using multiple factors instead of relying on a single recommendation score.
+CeylonCompass ranks destinations using traveller preferences, budget compatibility, weather, crowd preference and geographic efficiency.
 
 ![Destination Recommendations](assets/screenshots/02-recommendations.png)
 
-The system also explains **why each destination was recommended** and highlights possible trade-offs.
+The system also explains **why destinations were recommended** and highlights important trade-offs.
 
 ![Explainable Recommendations](assets/screenshots/03-explainability.png)
 
@@ -50,11 +55,11 @@ Recommended destinations are passed to the route optimization engine to determin
 
 ## Interactive Trip Map
 
-The optimized destinations are displayed using Folium and OpenStreetMap with numbered route markers.
+The optimized route is displayed using Folium and OpenStreetMap with numbered destination markers.
 
 ![Interactive Trip Map](assets/screenshots/05-trip_map.png)
 
-> The displayed route is a geographic visualization connecting destinations. It is not turn-by-turn road navigation.
+> The displayed route connects geographic coordinates in optimized order. It is not turn-by-turn road navigation.
 
 ---
 
@@ -76,15 +81,15 @@ The application estimates destination and transport costs and checks whether the
 
 # 🎯 Project Goal
 
-Planning a trip across Sri Lanka requires several decisions:
+Planning a multi-destination trip across Sri Lanka involves several decisions:
 
 - Which destinations match the traveller's interests?
-- Which destinations are affordable?
-- Which locations match the traveller's crowd preference?
+- Which destinations fit the available budget?
+- Which places match the traveller's preferred crowd level?
 - Which destinations currently have suitable weather?
-- Which destinations are geographically practical?
-- What is the best order to visit them?
-- Can the selected destinations fit within the available travel days?
+- Which locations are geographically practical?
+- In what order should the destinations be visited?
+- Can they fit within the available number of travel days?
 - What will the estimated trip cost be?
 
 CeylonCompass is designed around the following question:
@@ -95,17 +100,17 @@ CeylonCompass is designed around the following question:
 
 # ✨ Main Features
 
-## Traveller Preference Profile
+## 1. Traveller Preference Profile
 
 The traveller profile includes:
 
-- starting point
-- trip duration
-- total budget
-- travel style
-- crowd preference
-- transport preference
-- selected interests
+- Starting point
+- Trip duration
+- Total budget
+- Travel style
+- Crowd preference
+- Transport preference
+- Selected interests
 
 Supported interests:
 
@@ -119,11 +124,11 @@ Supported interests:
 
 ---
 
-## Destination Recommendation Engine
+## 2. Destination Recommendation Engine
 
 Traveller interests and destination characteristics are represented as feature vectors.
 
-CeylonCompass uses **cosine similarity** to measure how closely destinations match the selected interests.
+CeylonCompass uses **cosine similarity** to measure how closely each destination matches the traveller's selected interests.
 
 ```text
 Traveller Interests
@@ -137,9 +142,9 @@ Destination Preference Score
 
 ---
 
-## Multi-Criteria Final Ranking
+## 3. Multi-Criteria Final Ranking
 
-The final destination score combines five components:
+The final recommendation score combines five components:
 
 | Component | Weight |
 |---|---:|
@@ -148,6 +153,8 @@ The final destination score combines five components:
 | Weather suitability | 15% |
 | Crowd compatibility | 10% |
 | Route efficiency | 10% |
+
+The ranking model is:
 
 ```text
 Final Score =
@@ -158,43 +165,51 @@ Final Score =
 + 0.10 × Route Efficiency
 ```
 
-If weather information is unavailable or the traveller chooses **No Preference** for crowds, unavailable components are excluded and the remaining active weights are normalized.
+If weather information is unavailable, that component is excluded and the remaining active weights are normalized.
+
+If the traveller selects **No Preference** for crowds, the crowd component is also excluded instead of giving all destinations an artificial perfect crowd score.
 
 ---
 
-## Explainable Recommendations
+## 4. Explainable Recommendations
 
-Instead of displaying only a score, CeylonCompass provides explanations such as:
+CeylonCompass does not only display a ranking.
 
-- matching interests
-- budget suitability
-- crowd suitability
-- recommendation strengths
-- possible trade-offs
-- component-level scores
+For top recommendations, the system shows:
 
-This makes the recommendation process easier to understand.
+- Matching traveller interests
+- Budget suitability
+- Crowd compatibility
+- Weather suitability
+- Route efficiency
+- Recommendation reasons
+- Possible trade-offs
+- Active score weights
 
----
-
-## Route Efficiency
-
-Before route optimization, geographic efficiency is considered during destination ranking.
-
-The route-efficiency component considers:
-
-- distance from the selected starting point
-- distance between candidate destinations
-
-The current implementation uses **Haversine great-circle distance**.
+This makes the recommendation process easier to understand and inspect.
 
 ---
 
-## OR-Tools Route Optimization
+## 5. Geographic Route Efficiency
 
-After selecting destinations, **Google OR-Tools** determines an optimized visiting sequence.
+Geographic efficiency is considered during destination ranking.
 
-The two stages have different responsibilities:
+The current route-efficiency score considers:
+
+- Distance from the traveller's starting location
+- Relative distance between candidate destinations
+
+The implementation currently uses **Haversine great-circle distance**.
+
+This helps reduce the chance of selecting destinations that are individually relevant but geographically impractical as one trip.
+
+---
+
+## 6. OR-Tools Route Optimization
+
+After destination selection, **Google OR-Tools** determines an optimized visiting sequence.
+
+The recommendation and optimization stages have separate responsibilities:
 
 ```text
 Recommendation Engine
@@ -206,40 +221,40 @@ Route Optimizer
 IN WHAT ORDER should they visit?
 ```
 
-A nearest-neighbour algorithm is also included as a baseline for evaluating route optimization.
+The project also includes a nearest-neighbour route baseline for quantitative comparison.
 
 ---
 
-## Day-by-Day Itinerary
+## 7. Day-by-Day Itinerary
 
-The optimized route is converted into a daily travel plan.
+The optimized route is converted into a daily itinerary.
 
 The itinerary planner:
 
-- preserves route order
-- assigns destinations to travel days
-- supports an 8-hour daily activity limit
-- identifies destinations that cannot fit into the available days
-- adds day-specific weather information
+- Preserves optimized route order
+- Assigns destinations to trip days
+- Uses an 8-hour daily activity limit
+- Identifies destinations that cannot fit into the available days
+- Adds day-specific weather information
 
 Current V1 scheduling limits **activity time only**.
 
-Travel time between destinations is not yet included in the daily time limit.
+Travel time between destinations is not yet included in the daily time constraint.
 
 ---
 
-## Budget Estimation
+## 8. Budget Estimation
 
 The budget engine estimates:
 
-- destination spending
-- transport cost
-- estimated total trip cost
-- remaining budget
-- budget deficit
-- whether the itinerary stays within budget
+- Destination spending
+- Transport cost
+- Estimated total trip cost
+- Remaining budget
+- Budget deficit
+- Whether the trip stays within budget
 
-Travel styles supported:
+Travel styles:
 
 ```text
 Budget
@@ -247,7 +262,7 @@ Balanced
 Comfort
 ```
 
-Transport modes supported:
+Transport modes:
 
 ```text
 Public Transport
@@ -255,13 +270,13 @@ Mixed Transport
 Private Vehicle
 ```
 
-The current cost values are transparent modelling assumptions for the V1 system and are not guaranteed real-time Sri Lankan prices.
+The current cost values are transparent modelling assumptions used by the V1 system and are not guaranteed real-time Sri Lankan prices.
 
 ---
 
-## Weather Intelligence
+## 9. Weather Intelligence
 
-Live weather data is retrieved using the **Open-Meteo API**.
+CeylonCompass uses the **Open-Meteo API** for live weather information.
 
 Weather suitability considers:
 
@@ -272,11 +287,13 @@ Weather suitability considers:
 | Precipitation amount | 20% |
 | Temperature | 10% |
 
-Weather information contributes to destination ranking and is also displayed in the itinerary.
+Weather contributes to destination ranking and is also displayed inside the generated itinerary.
+
+Weather forecasts are cached temporarily to reduce unnecessary API calls.
 
 ---
 
-## Interactive Map
+## 10. Interactive Travel Map
 
 CeylonCompass uses:
 
@@ -286,12 +303,12 @@ CeylonCompass uses:
 
 The map displays:
 
-- traveller starting location
-- selected destinations
-- numbered route markers
-- optimized visit sequence
-- destination details
-- geographic route line
+- Traveller starting location
+- Selected destinations
+- Numbered route markers
+- Optimized visit sequence
+- Destination details
+- Geographic route line
 
 ---
 
@@ -372,7 +389,7 @@ Final Trip Plan
 
 CeylonCompass currently contains **48 curated Sri Lankan destinations**.
 
-Each destination contains information such as:
+Each destination includes fields such as:
 
 ```text
 destination_id
@@ -397,7 +414,7 @@ family_suitability
 best_months
 ```
 
-Main destination categories include:
+Main destination categories:
 
 - Beach
 - Heritage
@@ -407,7 +424,7 @@ Main destination categories include:
 - Culture
 - Adventure
 
-Some recommendation attributes are curated modelling inputs rather than objective ground-truth labels.
+Some recommendation-related features such as interest strengths and crowd levels are **curated modelling inputs** rather than objective ground-truth labels.
 
 ---
 
@@ -415,65 +432,65 @@ Some recommendation attributes are curated modelling inputs rather than objectiv
 
 ## Recommendation Systems
 
-- feature engineering
-- traveller feature vectors
-- destination feature vectors
-- cosine similarity
-- weighted scoring
-- multi-criteria ranking
+- Feature engineering
+- Traveller feature vectors
+- Destination feature vectors
+- Cosine similarity
+- Weighted scoring
+- Multi-criteria ranking
 
 ## Geospatial Analytics
 
-- latitude and longitude
+- Latitude and longitude
 - Haversine distance
-- distance matrices
-- geographic candidate clustering
+- Distance matrices
+- Geographic candidate proximity
 
 ## Optimization
 
 - Google OR-Tools
-- route sequencing
-- nearest-neighbour baseline
+- Route sequencing
+- Nearest-neighbour baseline
 
 ## Explainable AI
 
-- component-level scoring
-- recommendation reasons
-- trade-off explanations
-- transparent ranking weights
+- Component-level scoring
+- Recommendation reasons
+- Trade-off explanations
+- Transparent ranking weights
 
 ## Weather Analytics
 
 - Open-Meteo API
-- weather-code interpretation
-- rainfall probability
-- precipitation analysis
-- temperature suitability
+- Weather-code interpretation
+- Rainfall probability
+- Precipitation analysis
+- Temperature suitability
 
 ## Evaluation
 
-- reproducible traveller scenarios
-- deterministic weather benchmarking
-- budget compliance
-- itinerary compliance
-- route validity
-- recommendation score analysis
-- category diversity
-- optimizer vs baseline comparison
+- Reproducible traveller scenarios
+- Deterministic weather benchmarking
+- Budget compliance
+- Itinerary compliance
+- Route validity
+- Recommendation score analysis
+- Category diversity
+- Optimizer vs baseline comparison
 
 ---
 
 # 📈 Quantitative Evaluation
 
-The system was evaluated using **30 fixed traveller scenarios** covering different:
+CeylonCompass V1 was evaluated using **30 fixed traveller scenarios** covering different:
 
-- starting points
-- budgets
-- trip durations
-- travel styles
-- crowd preferences
-- transport types
-- traveller interests
+- Starting locations
+- Budgets
+- Trip durations
+- Travel styles
+- Crowd preferences
+- Transport modes
+- Traveller interests
 
 ## Evaluation Results
 
@@ -505,19 +522,17 @@ Average route distance saving: 4.47%
 
 The optimized route was **not worse than the nearest-neighbour baseline in any evaluated scenario**.
 
-Some routes showed almost no improvement because the nearest-neighbour solution was already efficient.
+Some scenarios showed little or no improvement because the nearest-neighbour route was already efficient.
 
 ---
 
 # ⚠️ Evaluation Notes
 
-The evaluation metrics should be interpreted carefully.
+## Preference Similarity
 
-### Preference Similarity
+The **82.63% preference similarity score is not recommendation accuracy**.
 
-The **82.63% preference similarity is not recommendation accuracy**.
-
-It measures similarity between traveller interests and curated destination feature vectors.
+It measures cosine similarity between traveller interests and curated destination feature vectors.
 
 The project currently does not contain human-labelled recommendation relevance data.
 
@@ -531,34 +546,36 @@ NDCG
 
 are not claimed yet.
 
-### Weather Evaluation
+## Weather Evaluation
 
-The automated evaluation uses deterministic synthetic weather so experiments can be reproduced consistently.
+The automated evaluation uses **deterministic synthetic weather** so experiments can be reproduced consistently.
 
-The actual Streamlit application uses live **Open-Meteo** data.
+This evaluates planner behaviour, not Open-Meteo forecast accuracy.
+
+The deployed Streamlit application itself uses live Open-Meteo forecast data.
 
 ---
 
 # 🧪 Testing
 
-The project currently contains automated tests covering:
+Automated tests currently cover:
 
-- dataset validation
-- traveller profiles
-- recommendation scoring
-- explanations
+- Dataset validation
+- Traveller profiles
+- Recommendation scoring
+- Explainability
 - Haversine distance
-- route baseline
+- Route baseline
 - OR-Tools optimization
-- itinerary planning
-- budget estimation
-- weather scoring
-- interactive maps
-- unified planning service
-- final weighted scoring
-- evaluation scenarios
-- evaluation metrics
-- evaluation reporting
+- Itinerary planning
+- Budget estimation
+- Weather processing
+- Interactive maps
+- Unified planning service
+- Final weighted scoring
+- Evaluation scenarios
+- Evaluation metrics
+- Evaluation reporting
 
 Current verified result:
 
@@ -566,7 +583,7 @@ Current verified result:
 244 passed
 ```
 
-Run the tests with:
+Run the complete test suite with:
 
 ```powershell
 python -m pytest
@@ -576,7 +593,7 @@ python -m pytest
 
 # 📁 Evaluation Artifacts
 
-The complete reproducible evaluation is stored in:
+Evaluation outputs are stored under:
 
 ```text
 evaluation/
@@ -592,7 +609,7 @@ evaluation/
     └── compliance_rates.html
 ```
 
-Run the full evaluation again using:
+Run the complete quantitative evaluation with:
 
 ```powershell
 python -m notebooks.evaluation_report
@@ -617,6 +634,7 @@ python -m notebooks.evaluation_report
 | Testing | pytest |
 | Reporting | pandas, Plotly, tabulate |
 | Version Control | Git & GitHub |
+| Deployment | Streamlit Community Cloud |
 
 ---
 
@@ -684,8 +702,6 @@ git clone https://github.com/SMCodeX7/Ceylon-Compass.git
 cd Ceylon-Compass
 ```
 
----
-
 ## 2. Create a Virtual Environment
 
 ```powershell
@@ -698,37 +714,53 @@ Activate it:
 .venv\Scripts\Activate.ps1
 ```
 
----
-
 ## 3. Install Dependencies
 
 ```powershell
 python -m pip install -r requirements.txt
 ```
 
----
-
-## 4. Run the Tests
+## 4. Run Tests
 
 ```powershell
 python -m pytest
 ```
 
----
-
-## 5. Run the Application
+## 5. Start the Application
 
 ```powershell
 streamlit run app.py
 ```
 
-The application will open in your browser.
+The application will open in the browser.
+
+---
+
+# 🌐 Deployment
+
+CeylonCompass V1 is publicly deployed using **Streamlit Community Cloud**.
+
+### Live Application
+
+[https://sm-ceylon-compass.streamlit.app/](https://sm-ceylon-compass.streamlit.app/)
+
+Deployment configuration:
+
+```text
+Platform: Streamlit Community Cloud
+Repository: SMCodeX7/Ceylon-Compass
+Branch: main
+Main file: app.py
+Python: 3.14
+```
+
+The deployed application does not require paid API keys.
 
 ---
 
 # 💰 Cost-Free Architecture
 
-CeylonCompass V1 is designed to work without paid APIs.
+CeylonCompass V1 is intentionally designed to work without paid APIs.
 
 It currently uses:
 
@@ -741,7 +773,7 @@ It currently uses:
 - Open-Meteo
 - Plotly
 
-No paid OpenAI, Gemini, Claude or Mistral API is required for V1.
+No paid OpenAI, Gemini, Claude or Mistral API is required for the current V1 application.
 
 ---
 
@@ -749,15 +781,15 @@ No paid OpenAI, Gemini, Claude or Mistral API is required for V1.
 
 CeylonCompass V1 currently has several known limitations:
 
-1. The destination dataset contains 48 destinations.
+1. The dataset contains 48 destinations.
 2. Recommendation feature values are manually curated.
 3. Haversine distance is used instead of actual road-network distance.
 4. The map route is not turn-by-turn navigation.
 5. Travel time is not included in the daily itinerary time limit.
 6. Budget estimates are modelling assumptions rather than real-time market prices.
-7. Budget influences ranking but is not yet a strict optimization constraint.
+7. Budget influences recommendation ranking but is not yet a strict trip-level optimization constraint.
 8. Route candidate count is not automatically adjusted for very short trips.
-9. Weather is based on the available forecast horizon rather than a user-selected future travel date.
+9. Weather uses the available forecast horizon rather than a user-selected future departure date.
 10. Human-labelled recommendation relevance data is not yet available.
 
 ---
@@ -766,53 +798,51 @@ CeylonCompass V1 currently has several known limitations:
 
 ## 1. Adaptive Trip Planning
 
-Improve destination selection based on trip duration.
+The number of selected destinations can be adjusted automatically based on trip duration.
 
-For example:
+Example:
 
 ```text
 2-day trip  → fewer route candidates
-7-day trip  → more route candidates
-14-day trip → larger itinerary
+7-day trip  → medium route candidate set
+14-day trip → larger route candidate set
 ```
 
-This will improve short-trip scheduled destination coverage.
+This can improve itinerary coverage for short trips.
 
 ---
 
 ## 2. Budget-Constrained Destination Selection
 
-Future versions can treat total trip budget as a hard constraint rather than only a ranking factor.
+Future versions can treat total trip budget as a hard optimization constraint.
 
-Possible approach:
+For example:
 
 ```text
 Maximize traveller preference
-while
-Total estimated trip cost <= traveller budget
+subject to
+Estimated trip cost <= traveller budget
 ```
-
-This could be implemented using optimization techniques.
 
 ---
 
 ## 3. Road-Network Routing
 
-Replace Haversine route estimates with actual road-network information.
+Replace Haversine distance with actual road-network routing.
 
-Future route planning could consider:
+Future routing could consider:
 
-- real driving distance
-- travel duration
-- road network
-- transport mode
-- traffic conditions
+- Driving distance
+- Travel duration
+- Road network
+- Transport mode
+- Traffic conditions
 
 ---
 
 ## 4. Travel-Time-Aware Itinerary
 
-Future itinerary planning can combine:
+Future itinerary planning can use:
 
 ```text
 Activity Time
@@ -828,66 +858,67 @@ This would make daily plans more realistic.
 
 ## 5. User-Selected Travel Dates
 
-Allow travellers to choose actual arrival and departure dates.
+Travellers could select actual arrival and departure dates.
 
-This can improve:
+This would improve:
 
-- weather forecasting
-- seasonal recommendations
-- best-month analysis
-- itinerary planning
+- Weather forecasting
+- Seasonal recommendations
+- Best-month analysis
+- Day-specific itinerary planning
 
 ---
 
 ## 6. Human Recommendation Evaluation
 
-Collect traveller relevance ratings to enable stronger recommender-system evaluation.
+Collect traveller relevance ratings and feedback.
 
-Future metrics could include:
+This would allow stronger recommendation-system evaluation using:
 
 - Precision@K
 - Recall@K
 - NDCG
 - Mean Reciprocal Rank
-- user satisfaction ratings
+- User satisfaction scores
 
 ---
 
 ## 7. Larger Destination Dataset
 
-Expand the dataset with:
+The destination dataset can be expanded with:
 
-- more beaches
-- historical attractions
-- hiking trails
-- cultural attractions
-- wildlife destinations
-- hidden destinations
-- restaurants
-- accommodation
-- local experiences
+- More beaches
+- Historical attractions
+- Hiking trails
+- Wildlife destinations
+- Cultural attractions
+- Hidden destinations
+- Restaurants
+- Accommodation
+- Local experiences
 
 ---
 
-# 🤖 Future Phase — Local AI Travel Assistant
+# 🤖 Future Phase — AI Travel Assistant
 
-The existing deterministic recommendation system can later be extended with a cost-free AI layer.
+A future cost-free AI layer can be built on top of the current deterministic planning engine.
 
 Possible technologies include:
 
 - Sentence Transformers
 - FAISS
 - Ollama
-- local LLMs
-- semantic search
+- Local LLMs
+- Semantic search
 - RAG
-- NLP traveller-profile extraction
+- NLP profile extraction
 
 Example:
 
 ```text
 User:
-"I have 5 days, around $400, love wildlife and nature,
+"I have 5 days, around $400,
+love wildlife and nature,
 and prefer quiet places."
 
         ↓
@@ -911,41 +942,41 @@ AI Explanation
 Personalized Itinerary
 ```
 
-Future AI capabilities could include:
+Possible future AI capabilities:
 
-- natural-language trip requests
-- conversational itinerary editing
-- semantic destination search
-- automatic trip replanning
-- itinerary question answering
-- recommendation verification
-- tool-calling travel assistant
+- Natural-language trip requests
+- Conversational itinerary editing
+- Semantic destination search
+- Automatic trip replanning
+- Travel question answering
+- Recommendation verification
+- Tool-calling travel assistant
 
-The deterministic recommendation and optimization pipeline will remain the main planning foundation.
+The current deterministic recommendation and optimization pipeline will remain the reliable planning foundation underneath the AI layer.
 
 ---
 
 # 🧭 Design Principle
 
-CeylonCompass separates recommendation and optimization:
+CeylonCompass separates recommendation from optimization:
 
 > **The recommender decides WHERE to travel.**
 
 > **The optimizer decides IN WHAT ORDER to travel.**
 
-This separation makes the system easier to explain, test and improve.
+This makes the system easier to explain, evaluate, test and improve.
 
 ---
 
 # 🔬 Reproducibility
 
-Run the complete automated test suite:
+Run the automated test suite:
 
 ```powershell
 python -m pytest
 ```
 
-Run the quantitative evaluation:
+Run the complete quantitative evaluation:
 
 ```powershell
 python -m notebooks.evaluation_report
@@ -962,3 +993,6 @@ See the [LICENSE](LICENSE) file for licensing information.
 # 🇱🇰 CeylonCompass
 
 **Data-driven Sri Lanka travel planning with explainable recommendations, route optimization, weather intelligence and reproducible evaluation.**
+
+🌐 **Live Demo:**  
+[https://sm-ceylon-compass.streamlit.app/](https://sm-ceylon-compass.streamlit.app/)
