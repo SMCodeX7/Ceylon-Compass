@@ -1,0 +1,49 @@
+destination_id,name,district,province,latitude,longitude,category,estimated_daily_cost_usd,recommended_duration_hours,crowd_level,beach,wildlife,hiking,nature,culture,history,adventure,fitness_requirement,family_suitability,best_months
+SL001,Sigiriya,Matale,Central,7.9571,80.7573,Heritage,45,4,5,0,2,4,4,5,5,4,4,4,Jan-Apr|Jul-Sep
+SL002,Kandy,Kandy,Central,7.2931,80.6350,Culture,40,6,5,0,1,1,3,5,5,1,2,5,Jan-Apr|Dec
+SL003,Ella,Badulla,Uva,6.8736,81.0490,Nature,45,8,5,0,2,5,5,2,1,5,4,4,Jan-Mar|Jun-Sep
+SL004,Yala National Park,Hambantota,Southern,6.3728,81.5169,Wildlife,70,6,4,0,5,1,5,1,0,4,2,4,Jun-Sep
+SL005,Mirissa,Matara,Southern,5.9494,80.4558,Beach,50,8,5,5,4,1,4,2,1,4,2,5,Nov-Apr
+SL006,Galle Fort,Galle,Southern,6.0305,80.2169,Heritage,50,6,5,3,0,1,2,5,5,2,2,5,Dec-Apr
+SL007,Nuwara Eliya,Nuwara Eliya,Central,6.9740,80.7670,Nature,50,8,4,0,1,3,5,3,3,3,2,5,Feb-May
+SL008,Horton Plains National Park,Nuwara Eliya,Central,6.8030,80.7915,Hiking,45,5,4,0,4,5,5,1,1,4,4,3,Jan-Mar
+SL009,Arugam Bay,Ampara,Eastern,6.8504,81.8367,Beach,45,8,4,5,2,1,4,2,1,5,3,4,May-Sep
+SL010,Anuradhapura,Anuradhapura,North Central,8.3350,80.4106,Heritage,40,8,4,0,1,2,3,5,5,2,3,5,Jan-Mar|Jun-Sep
+SL011,Polonnaruwa,Polonnaruwa,North Central,7.9395,81.0003,Heritage,40,7,4,0,2,2,4,5,5,3,3,5,Jan-Mar|Jun-Sep
+SL012,Dambulla Cave Temple,Matale,Central,7.8566,80.6484,Heritage,35,3,4,0,1,4,3,5,5,3,4,4,Jan-Apr|Jun-Sep
+SL013,Trincomalee,Trincomalee,Eastern,8.5764,81.2345,Culture,45,8,4,4,4,1,4,5,4,4,2,5,May-Sep
+SL014,Nilaveli Beach,Trincomalee,Eastern,8.6815,81.1916,Beach,45,7,4,5,3,1,4,1,1,4,2,5,May-Sep
+SL015,Pigeon Island National Park,Trincomalee,Eastern,8.7221,81.2042,Wildlife,60,5,4,5,5,1,5,1,1,5,3,4,May-Sep
+SL016,Minneriya National Park,Polonnaruwa,North Central,8.0327,80.8236,Wildlife,65,5,4,0,5,1,5,1,1,4,2,5,May-Sep
+SL017,Bundala National Park,Hambantota,Southern,6.1874,81.1974,Wildlife,55,5,3,2,5,1,5,1,1,3,2,4,Sep-Mar
+SL018,Kitulgala,Kegalle,Sabaragamuwa,6.9979,80.4085,Adventure,50,7,4,0,3,4,5,1,1,5,4,3,Jan-Apr|Nov-Dec
+SL019,Riverston,Matale,Central,7.5245,80.7339,Hiking,40,6,3,0,3,5,5,1,1,5,4,3,Jan-Mar|Jun-Sep
+SL020,Jaffna Fort,Jaffna,Northern,9.6623,80.0083,Heritage,35,4,3,1,0,1,2,5,5,1,2,5,Jan-Sep
+SL021,Casuarina Beach,Jaffna,Northern,9.7631,79.8866,Beach,35,6,2,5,2,1,4,2,1,3,2,5,Jan-Sep
+SL022,Hikkaduwa,Galle,Southern,6.1408,80.1028,Beach,50,8,5,5,4,2,4,2,1,5,2,5,Nov-Apr
+SL023,Bentota,Galle,Southern,6.4215,79.9979,Beach,60,8,4,5,2,1,4,2,1,5,2,5,Nov-Apr
+SL024,Unawatuna,Galle,Southern,6.0202,80.2475,Beach,50,7,5,5,3,1,4,2,1,4,2,5,Nov-Apr
+SL025,Sinharaja Forest Reserve,Ratnapura,Sabaragamuwa,6.4218,80.4875,Nature,45,7,3,0,5,4,5,1,1,4,4,3,Jan-Apr|Aug-Sep
+SL026,Sri Pada Adams Peak,Ratnapura,Sabaragamuwa,6.8088,80.4972,Hiking,40,8,5,0,1,5,5,5,5,5,5,2,Dec-May
+SL027,Knuckles Mountain Range,Kandy,Central,7.4000,80.8000,Hiking,50,8,3,0,4,5,5,2,1,5,5,2,Jan-Mar|Jun-Sep
+SL028,Diyaluma Falls,Badulla,Uva,6.7359,81.0327,Nature,35,5,3,0,1,4,5,1,1,5,4,3,Jan-Mar|Jun-Sep
+SL029,Bambarakanda Falls,Badulla,Uva,6.7734,80.8313,Nature,35,5,2,0,2,4,5,1,1,4,3,3,Jan-Mar|Jun-Sep
+SL030,Udawalawe National Park,Monaragala,Uva,6.4740,80.8987,Wildlife,65,6,4,0,5,1,5,1,0,4,2,5,Jan-Mar|May-Sep
+SL031,Wilpattu National Park,Anuradhapura,North Central,8.4106,80.1614,Wildlife,70,7,2,0,5,1,5,1,1,4,2,4,Feb-Oct
+SL032,Kaudulla National Park,Polonnaruwa,North Central,8.1365,80.8795,Wildlife,60,5,3,0,5,1,5,1,1,4,2,5,Aug-Dec
+SL033,Pasikudah Beach,Batticaloa,Eastern,7.9294,81.5690,Beach,50,7,3,5,2,1,4,2,1,4,2,5,May-Sep
+SL034,Kalpitiya,Puttalam,North Western,8.2368,79.7662,Beach,50,8,3,5,4,1,4,2,1,5,3,4,Nov-Apr
+SL035,Negombo,Gampaha,Western,7.2094,79.8331,Beach,50,7,5,5,2,1,3,4,3,3,2,5,Dec-Apr
+SL036,Mannar Fort,Mannar,Northern,8.9760,79.9171,Heritage,35,4,2,2,1,1,2,5,5,1,2,5,Jan-Sep
+SL037,Meemure Eco Village,Kandy,Central,7.4333,80.8333,Adventure,45,8,3,0,3,5,5,4,3,5,4,3,Jan-Mar|Jun-Aug
+SL038,Belihuloya,Ratnapura,Sabaragamuwa,6.7198,80.7720,Adventure,45,8,3,0,3,5,5,2,2,5,4,4,Jan-Apr|Jun-Sep
+SL039,Pidurangala Rock,Matale,Central,7.9662,80.7617,Hiking,35,4,4,0,1,5,5,3,4,5,4,3,Jan-Apr|Jun-Sep
+SL040,Lipton's Seat,Badulla,Uva,6.7807,81.0155,Hiking,30,4,3,0,1,4,5,3,3,4,3,4,Jan-Mar|Jul-Sep
+SL041,Nallur Kandaswamy Kovil,Jaffna,Northern,9.6746,80.0296,Culture,30,3,4,0,0,0,1,5,5,0,1,5,Jan-Sep
+SL042,Kataragama Sacred City,Monaragala,Uva,6.4136,81.3324,Culture,35,5,5,0,1,1,2,5,5,1,2,5,Jan-Apr|Jul-Sep
+SL043,Mihintale,Anuradhapura,North Central,8.3610,80.5009,Culture,35,5,4,0,1,4,4,5,5,3,4,4,Jan-Mar|Jun-Sep
+SL044,Kanneliya Forest Reserve,Galle,Southern,6.2667,80.3600,Nature,40,6,2,0,5,4,5,1,0,4,4,3,Jan-Apr|Aug-Sep
+SL045,Kumana National Park,Ampara,Eastern,6.5130,81.6880,Wildlife,65,6,2,0,5,1,5,1,1,4,2,4,Apr-Sep
+SL046,Weligama,Matara,Southern,5.9750,80.4297,Adventure,50,8,5,5,2,1,4,2,1,5,3,5,Oct-Apr
+SL047,Delft Island,Jaffna,Northern,9.5000,79.7000,Nature,45,8,2,4,3,1,4,4,4,4,2,4,Jan-Sep
+SL048,Yapahuwa Rock Fortress,Kurunegala,North Western,7.8160,80.3115,Heritage,35,4,2,0,1,4,3,5,5,4,4,4,Jan-Sep
