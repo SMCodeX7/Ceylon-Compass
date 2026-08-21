@@ -28,6 +28,7 @@ from src.ui.theme import (
     render_hero,
     render_section_intro,
     render_sidebar_brand,
+    render_traveller_profile,
 )
 from src.visualization.map_builder import (
     build_optimized_route_map,
@@ -1260,79 +1261,25 @@ def main() -> None:
                 interests=tuple(interests),
             )
 
-            st.success(
-                "Your traveller profile was processed "
-                "successfully."
-            )
-
             render_section_intro(
                 title="Your traveller profile",
                 description=(
-                    "A summary of the preferences being used "
-                    "to create your personalized journey."
+                    "A clear summary of the preferences being "
+                    "used to create your personalized journey."
                 ),
                 icon="👤",
             )
 
-            profile_col1, profile_col2, profile_col3 = (
-                st.columns(
-                    3,
-                    gap="medium",
-                )
+            render_traveller_profile(
+                starting_point=profile.starting_point,
+                trip_days=profile.trip_days,
+                budget_usd=profile.budget_usd,
+                daily_budget_usd=profile.daily_budget(),
+                travel_style=profile.travel_style,
+                crowd_preference=profile.crowd_preference,
+                transport=profile.transport,
+                interests=profile.interests,
             )
-
-            profile_col1.metric(
-                "Trip Duration",
-                f"{profile.trip_days} days",
-            )
-
-            profile_col2.metric(
-                "Total Budget",
-                f"${profile.budget_usd:.0f}",
-            )
-
-            profile_col3.metric(
-                "Daily Budget",
-                f"${profile.daily_budget():.2f}",
-            )
-
-            with st.container(border=True):
-                detail_col1, detail_col2 = st.columns(
-                    2,
-                    gap="large",
-                )
-
-                with detail_col1:
-                    st.markdown(
-                        f"**📍 Starting Point:** "
-                        f"{profile.starting_point}"
-                    )
-
-                    st.markdown(
-                        f"**🎒 Travel Style:** "
-                        f"{profile.travel_style}"
-                    )
-
-                    st.markdown(
-                        f"**👥 Crowd Preference:** "
-                        f"{profile.crowd_preference}"
-                    )
-
-                with detail_col2:
-                    st.markdown(
-                        f"**🚗 Transport:** "
-                        f"{profile.transport}"
-                    )
-
-                    st.markdown(
-                        f"**✨ Interests:** "
-                        f"{', '.join(profile.interests)}"
-                    )
-
-                    st.markdown(
-                        f"**🗓️ Planned Duration:** "
-                        f"{profile.trip_days} days"
-                    )
 
             with st.spinner(
                 "Building your Sri Lankan journey: "

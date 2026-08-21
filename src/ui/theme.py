@@ -1,12 +1,13 @@
 """Visual theme and reusable UI components for Ceylon Compass."""
 
 from html import escape
+from typing import Iterable
 
 import streamlit as st
 
 
 def apply_ceylon_compass_theme() -> None:
-    """Apply the tropical light theme across the Streamlit application."""
+    """Apply the tropical light theme across the application."""
 
     st.markdown(
         """
@@ -24,12 +25,7 @@ def apply_ceylon_compass_theme() -> None:
     --cc-muted: #5E7479;
     --cc-border: #D7E7E4;
     --cc-white: #FFFFFF;
-    --cc-danger: #B42318;
 }
-
-/* ----------------------------------------------------
-   Main application
----------------------------------------------------- */
 
 html,
 body,
@@ -60,10 +56,6 @@ body,
 [data-testid="stHeader"] {
     background: rgba(247, 252, 251, 0.88);
     backdrop-filter: blur(12px);
-}
-
-[data-testid="stToolbar"] {
-    color: var(--cc-ink);
 }
 
 [data-testid="stMainBlockContainer"] {
@@ -99,9 +91,7 @@ h2 {
     color: #809397 !important;
 }
 
-/* ----------------------------------------------------
-   Sidebar
----------------------------------------------------- */
+/* Sidebar */
 
 [data-testid="stSidebar"] {
     border-right: 0;
@@ -114,10 +104,6 @@ h2 {
         );
 }
 
-[data-testid="stSidebarContent"] {
-    padding-top: 1rem;
-}
-
 [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] {
     color: #FFFFFF;
 }
@@ -127,8 +113,8 @@ h2 {
 }
 
 [data-testid="stSidebarCollapseButton"] svg {
-    fill: #FFFFFF !important;
     color: #FFFFFF !important;
+    fill: #FFFFFF !important;
 }
 
 .cc-sidebar-brand {
@@ -177,9 +163,7 @@ h2 {
     color: #FFFFFF !important;
 }
 
-/* ----------------------------------------------------
-   Hero
----------------------------------------------------- */
+/* Hero */
 
 .cc-hero {
     position: relative;
@@ -260,9 +244,7 @@ h2 {
     line-height: 1.7;
 }
 
-/* ----------------------------------------------------
-   Feature cards
----------------------------------------------------- */
+/* Feature cards */
 
 .cc-feature-strip {
     display: grid;
@@ -283,9 +265,7 @@ h2 {
     text-align: center;
 }
 
-/* ----------------------------------------------------
-   Section introduction
----------------------------------------------------- */
+/* Section headings */
 
 .cc-section-intro {
     margin: 2.1rem 0 0.9rem;
@@ -314,9 +294,7 @@ h2 {
     color: var(--cc-muted) !important;
 }
 
-/* ----------------------------------------------------
-   Streamlit bordered containers
----------------------------------------------------- */
+/* Bordered containers */
 
 [data-testid="stVerticalBlockBorderWrapper"] {
     border-color: var(--cc-border) !important;
@@ -325,9 +303,7 @@ h2 {
     box-shadow: 0 12px 30px rgba(20, 74, 78, 0.09);
 }
 
-/* ----------------------------------------------------
-   Form fields
----------------------------------------------------- */
+/* Form fields */
 
 [data-testid="stWidgetLabel"] p {
     color: #3F6269 !important;
@@ -368,10 +344,6 @@ h2 {
     fill: #FFFFFF !important;
 }
 
-[data-baseweb="popover"] {
-    color: var(--cc-ink) !important;
-}
-
 [role="listbox"] {
     background: #FFFFFF !important;
 }
@@ -389,9 +361,7 @@ h2 {
     background: var(--cc-green-light) !important;
 }
 
-/* ----------------------------------------------------
-   Slider
----------------------------------------------------- */
+/* Slider */
 
 [data-testid="stSlider"] [role="slider"] {
     border-color: var(--cc-ocean) !important;
@@ -406,9 +376,7 @@ h2 {
     background-color: var(--cc-ocean) !important;
 }
 
-/* ----------------------------------------------------
-   Buttons
----------------------------------------------------- */
+/* Buttons */
 
 .stButton > button,
 [data-testid="stFormSubmitButton"] > button {
@@ -448,17 +416,7 @@ h2 {
     transform: translateY(-1px);
 }
 
-.stButton > button:focus,
-[data-testid="stFormSubmitButton"] > button:focus {
-    color: #FFFFFF !important;
-    box-shadow:
-        0 0 0 0.2rem rgba(8, 126, 139, 0.18),
-        0 13px 30px rgba(8, 126, 139, 0.24);
-}
-
-/* ----------------------------------------------------
-   Metrics
----------------------------------------------------- */
+/* Standard Streamlit metrics */
 
 [data-testid="stMetric"] {
     min-height: 8.5rem;
@@ -479,21 +437,265 @@ h2 {
     font-weight: 700 !important;
 }
 
-[data-testid="stMetricValue"] {
-    color: #526D73 !important;
-    font-weight: 800 !important;
-}
-
+[data-testid="stMetricValue"],
 [data-testid="stMetricValue"] > div {
     overflow: hidden;
     color: #526D73 !important;
+    font-weight: 800 !important;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-/* ----------------------------------------------------
-   Alerts
----------------------------------------------------- */
+/* Traveller profile */
+
+.cc-profile {
+    overflow: hidden;
+    margin: 1rem 0 2.5rem;
+    border: 1px solid var(--cc-border);
+    border-radius: 1.4rem;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 16px 38px rgba(17, 78, 81, 0.11);
+}
+
+.cc-profile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.2rem 1.35rem;
+    background:
+        linear-gradient(
+            110deg,
+            rgba(7, 90, 101, 0.08),
+            rgba(36, 150, 109, 0.10),
+            rgba(247, 231, 198, 0.24)
+        );
+    border-bottom: 1px solid var(--cc-border);
+}
+
+.cc-profile-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.cc-profile-icon {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: 0.9rem;
+    background:
+        linear-gradient(
+            135deg,
+            var(--cc-ocean),
+            var(--cc-green)
+        );
+    color: #FFFFFF;
+    font-size: 1.25rem;
+    box-shadow: 0 8px 18px rgba(8, 126, 139, 0.20);
+}
+
+.cc-profile-heading h3 {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    color: var(--cc-ink) !important;
+    font-size: 1.15rem !important;
+}
+
+.cc-profile-heading p {
+    margin: 0.2rem 0 0;
+    color: var(--cc-muted) !important;
+    font-size: 0.84rem;
+}
+
+.cc-profile-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex: 0 0 auto;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid rgba(36, 150, 109, 0.22);
+    border-radius: 999px;
+    background: var(--cc-green-light);
+    color: var(--cc-green-dark) !important;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.cc-profile-status-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--cc-green);
+    box-shadow: 0 0 0 0.2rem rgba(36, 150, 109, 0.13);
+}
+
+.cc-profile-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    padding: 1.25rem 1.35rem 0;
+}
+
+.cc-profile-stat {
+    position: relative;
+    overflow: hidden;
+    min-height: 7.8rem;
+    padding: 1.1rem;
+    border: 1px solid var(--cc-border);
+    border-radius: 1rem;
+    background:
+        linear-gradient(
+            145deg,
+            #FFFFFF,
+            #F0F8F6
+        );
+}
+
+.cc-profile-stat::after {
+    content: "";
+    position: absolute;
+    right: -1.8rem;
+    bottom: -2.2rem;
+    width: 5rem;
+    height: 5rem;
+    border-radius: 50%;
+    background: rgba(8, 126, 139, 0.07);
+}
+
+.cc-profile-stat-icon {
+    margin-bottom: 0.55rem;
+    font-size: 1.15rem;
+}
+
+.cc-profile-stat-label {
+    color: var(--cc-muted) !important;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.cc-profile-stat-value {
+    position: relative;
+    z-index: 1;
+    margin-top: 0.25rem;
+    color: var(--cc-ink) !important;
+    font-size: clamp(1.55rem, 3vw, 2rem);
+    font-weight: 850;
+    letter-spacing: -0.04em;
+}
+
+.cc-profile-details {
+    margin: 1.25rem 1.35rem 1.35rem;
+    padding: 1.25rem;
+    border: 1px solid rgba(247, 231, 198, 0.95);
+    border-radius: 1rem;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 249, 236, 0.92),
+            rgba(255, 255, 255, 0.96)
+        );
+}
+
+.cc-profile-details-title {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 1rem;
+    color: var(--cc-ocean-dark) !important;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.cc-profile-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.cc-profile-detail {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    padding: 0.85rem;
+    border: 1px solid rgba(215, 231, 228, 0.9);
+    border-radius: 0.85rem;
+    background: rgba(255, 255, 255, 0.80);
+}
+
+.cc-profile-detail-icon {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 2.35rem;
+    height: 2.35rem;
+    border-radius: 0.75rem;
+    background: var(--cc-ocean-light);
+    font-size: 1rem;
+}
+
+.cc-profile-detail-content {
+    min-width: 0;
+}
+
+.cc-profile-detail-label {
+    color: var(--cc-muted) !important;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.cc-profile-detail-value {
+    overflow: hidden;
+    margin-top: 0.12rem;
+    color: var(--cc-ink) !important;
+    font-size: 0.92rem;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cc-profile-interests {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--cc-border);
+}
+
+.cc-profile-interests-label {
+    margin-bottom: 0.65rem;
+    color: var(--cc-muted) !important;
+    font-size: 0.75rem;
+    font-weight: 750;
+    text-transform: uppercase;
+}
+
+.cc-profile-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.cc-profile-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.48rem 0.72rem;
+    border: 1px solid rgba(8, 126, 139, 0.18);
+    border-radius: 999px;
+    background: var(--cc-ocean-light);
+    color: var(--cc-ocean-dark) !important;
+    font-size: 0.8rem;
+    font-weight: 750;
+}
+
+/* Alerts */
 
 [data-testid="stAlert"] {
     border-radius: 0.9rem !important;
@@ -506,25 +708,7 @@ h2 {
     color: #3F6269 !important;
 }
 
-[data-testid="stNotificationContentInfo"] {
-    background: #E8F3FF !important;
-}
-
-[data-testid="stNotificationContentSuccess"] {
-    background: var(--cc-green-light) !important;
-}
-
-[data-testid="stNotificationContentWarning"] {
-    background: #FFFCE4 !important;
-}
-
-[data-testid="stNotificationContentError"] {
-    background: #FFF0EE !important;
-}
-
-/* ----------------------------------------------------
-   Expanders
----------------------------------------------------- */
+/* Expanders */
 
 [data-testid="stExpander"] {
     overflow: hidden;
@@ -542,26 +726,17 @@ h2 {
     color: var(--cc-ink) !important;
 }
 
-/* ----------------------------------------------------
-   Dataframes and tables
----------------------------------------------------- */
+/* Dataframes */
 
-[data-testid="stDataFrame"] {
+[data-testid="stDataFrame"],
+[data-testid="stTable"] {
     overflow: hidden;
     border: 1px solid var(--cc-border);
     border-radius: 1rem;
     box-shadow: 0 8px 24px rgba(25, 83, 84, 0.06);
 }
 
-[data-testid="stTable"] {
-    overflow: hidden;
-    border: 1px solid var(--cc-border);
-    border-radius: 1rem;
-}
-
-/* ----------------------------------------------------
-   Progress bar
----------------------------------------------------- */
+/* Progress bars */
 
 [data-testid="stProgress"] > div > div > div > div {
     background:
@@ -572,25 +747,11 @@ h2 {
         ) !important;
 }
 
-/* ----------------------------------------------------
-   Dividers
----------------------------------------------------- */
-
 hr {
     border-color: var(--cc-border) !important;
 }
 
-/* ----------------------------------------------------
-   Spinner
----------------------------------------------------- */
-
-[data-testid="stSpinner"] {
-    color: var(--cc-ocean) !important;
-}
-
-/* ----------------------------------------------------
-   Footer
----------------------------------------------------- */
+/* Footer */
 
 .cc-footer {
     margin-top: 2.8rem;
@@ -608,9 +769,7 @@ hr {
     color: var(--cc-ocean-dark) !important;
 }
 
-/* ----------------------------------------------------
-   Responsive design
----------------------------------------------------- */
+/* Responsive layout */
 
 @media (max-width: 900px) {
     .cc-feature-strip {
@@ -637,6 +796,23 @@ hr {
         font-size: 0.96rem;
     }
 
+    .cc-profile-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .cc-profile-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .cc-profile-stat {
+        min-height: auto;
+    }
+
+    .cc-profile-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
     [data-testid="stMetric"] {
         min-height: auto;
     }
@@ -655,10 +831,15 @@ hr {
         font-size: 1.95rem !important;
     }
 
-    .cc-footer span {
-        display: block;
-        height: 0;
-        overflow: hidden;
+    .cc-profile-header,
+    .cc-profile-stats {
+        padding-right: 1rem;
+        padding-left: 1rem;
+    }
+
+    .cc-profile-details {
+        margin-right: 1rem;
+        margin-left: 1rem;
     }
 }
 </style>
@@ -733,6 +914,114 @@ def render_section_intro(
 
     st.markdown(
         section_html,
+        unsafe_allow_html=True,
+    )
+
+
+def render_traveller_profile(
+    *,
+    starting_point: str,
+    trip_days: int,
+    budget_usd: float,
+    daily_budget_usd: float,
+    travel_style: str,
+    crowd_preference: str,
+    transport: str,
+    interests: Iterable[str],
+) -> None:
+    """Render a polished traveller-profile summary."""
+
+    safe_starting_point = escape(str(starting_point))
+    safe_trip_days = int(trip_days)
+    safe_budget = float(budget_usd)
+    safe_daily_budget = float(daily_budget_usd)
+    safe_travel_style = escape(str(travel_style))
+    safe_crowd_preference = escape(str(crowd_preference))
+    safe_transport = escape(str(transport))
+
+    interest_chips = "".join(
+        (
+            '<span class="cc-profile-chip">'
+            f"✨ {escape(str(interest))}"
+            "</span>"
+        )
+        for interest in interests
+    )
+
+    profile_html = f"""
+<section class="cc-profile">
+<div class="cc-profile-header">
+<div class="cc-profile-heading">
+<div class="cc-profile-icon">🧳</div>
+<div>
+<h3>Your journey profile</h3>
+<p>The travel preferences used to build your personalized itinerary.</p>
+</div>
+</div>
+<div class="cc-profile-status">
+<span class="cc-profile-status-dot"></span>
+Profile ready
+</div>
+</div>
+<div class="cc-profile-stats">
+<div class="cc-profile-stat">
+<div class="cc-profile-stat-icon">🗓️</div>
+<div class="cc-profile-stat-label">Trip duration</div>
+<div class="cc-profile-stat-value">{safe_trip_days} days</div>
+</div>
+<div class="cc-profile-stat">
+<div class="cc-profile-stat-icon">💳</div>
+<div class="cc-profile-stat-label">Total budget</div>
+<div class="cc-profile-stat-value">${safe_budget:,.0f}</div>
+</div>
+<div class="cc-profile-stat">
+<div class="cc-profile-stat-icon">☀️</div>
+<div class="cc-profile-stat-label">Daily budget</div>
+<div class="cc-profile-stat-value">${safe_daily_budget:,.2f}</div>
+</div>
+</div>
+<div class="cc-profile-details">
+<div class="cc-profile-details-title">🪪 Travel profile details</div>
+<div class="cc-profile-detail-grid">
+<div class="cc-profile-detail">
+<div class="cc-profile-detail-icon">📍</div>
+<div class="cc-profile-detail-content">
+<div class="cc-profile-detail-label">Starting point</div>
+<div class="cc-profile-detail-value">{safe_starting_point}</div>
+</div>
+</div>
+<div class="cc-profile-detail">
+<div class="cc-profile-detail-icon">🎒</div>
+<div class="cc-profile-detail-content">
+<div class="cc-profile-detail-label">Travel style</div>
+<div class="cc-profile-detail-value">{safe_travel_style}</div>
+</div>
+</div>
+<div class="cc-profile-detail">
+<div class="cc-profile-detail-icon">👥</div>
+<div class="cc-profile-detail-content">
+<div class="cc-profile-detail-label">Crowd preference</div>
+<div class="cc-profile-detail-value">{safe_crowd_preference}</div>
+</div>
+</div>
+<div class="cc-profile-detail">
+<div class="cc-profile-detail-icon">🚗</div>
+<div class="cc-profile-detail-content">
+<div class="cc-profile-detail-label">Preferred transport</div>
+<div class="cc-profile-detail-value">{safe_transport}</div>
+</div>
+</div>
+</div>
+<div class="cc-profile-interests">
+<div class="cc-profile-interests-label">Selected interests</div>
+<div class="cc-profile-chips">{interest_chips}</div>
+</div>
+</div>
+</section>
+"""
+
+    st.markdown(
+        profile_html,
         unsafe_allow_html=True,
     )
 
