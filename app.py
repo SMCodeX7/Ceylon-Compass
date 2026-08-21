@@ -22,6 +22,13 @@ from src.recommendation.final_scoring import (
 from src.recommendation.traveller_profile import (
     TravellerProfile,
 )
+from src.ui.theme import (
+    apply_ceylon_compass_theme,
+    render_footer,
+    render_hero,
+    render_section_intro,
+    render_sidebar_brand,
+)
 from src.visualization.map_builder import (
     build_optimized_route_map,
 )
@@ -38,10 +45,13 @@ WEATHER_CACHE_TTL_SECONDS = 1800
 
 st.set_page_config(
     page_title="CeylonCompass",
-    page_icon="\U0001F1F1\U0001F1F0",
+    page_icon="🇱🇰",
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+apply_ceylon_compass_theme()
+render_sidebar_brand()
 
 
 @st.cache_data(
@@ -54,11 +64,10 @@ def get_cached_weather_forecast(
     forecast_days: int,
 ):
     """
-    Retrieve and temporarily cache Open-Meteo
-    forecast data.
+    Retrieve and temporarily cache Open-Meteo forecast data.
 
-    The unified planning service receives this
-    function as its weather provider.
+    The unified planning service receives this function
+    as its weather provider.
     """
 
     return fetch_weather_forecast(
@@ -69,9 +78,7 @@ def get_cached_weather_forecast(
 
 
 def display_scoring_methodology() -> None:
-    """
-    Explain the final weighted recommendation model.
-    """
+    """Explain the final weighted recommendation model."""
 
     with st.expander(
         "How the final recommendation score works"
@@ -136,9 +143,7 @@ def display_recommendations(
     by the unified planning service.
     """
 
-    recommendations = (
-        plan.recommendations
-    )
+    recommendations = plan.recommendations
 
     st.header(
         "Final Destination Recommendations"
@@ -192,9 +197,7 @@ def display_recommendations(
     )
 
     for _, destination in (
-        recommendations
-        .head(5)
-        .iterrows()
+        recommendations.head(5).iterrows()
     ):
         explanation = explain_destination(
             destination,
@@ -412,11 +415,9 @@ def display_interactive_route_map(
         "sequence."
     )
 
-    route_map = (
-        build_optimized_route_map(
-            plan.optimized_route,
-            plan.profile.starting_point,
-        )
+    route_map = build_optimized_route_map(
+        plan.optimized_route,
+        plan.profile.starting_point,
     )
 
     st_folium(
@@ -440,9 +441,7 @@ def display_interactive_route_map(
 def display_route(
     plan: TripPlan,
 ) -> None:
-    """
-    Display optimized route information.
-    """
+    """Display optimized route information."""
 
     st.divider()
 
@@ -450,9 +449,7 @@ def display_route(
         "Optimized Trip Route"
     )
 
-    summary = (
-        plan.itinerary_summary
-    )
+    summary = plan.itinerary_summary
 
     col1, col2, col3, col4 = (
         st.columns(4)
@@ -508,10 +505,8 @@ def display_route(
         ].casefold()
         == plan.profile.starting_point.casefold()
     ):
-        route_text = (
-            " → ".join(
-                route_names
-            )
+        route_text = " → ".join(
+            route_names
         )
     else:
         route_text = (
@@ -566,9 +561,7 @@ def display_route(
 def display_itinerary(
     plan: TripPlan,
 ) -> None:
-    """
-    Display the generated day-by-day itinerary.
-    """
+    """Display the generated day-by-day itinerary."""
 
     st.divider()
 
@@ -576,13 +569,8 @@ def display_itinerary(
         "Day-by-Day Itinerary"
     )
 
-    itinerary = (
-        plan.itinerary
-    )
-
-    summary = (
-        plan.itinerary_summary
-    )
+    itinerary = plan.itinerary
+    summary = plan.itinerary_summary
 
     col1, col2, col3 = (
         st.columns(3)
@@ -952,13 +940,8 @@ def display_budget_breakdown(
     unified planning service.
     """
 
-    budget = (
-        plan.budget
-    )
-
-    profile = (
-        plan.profile
-    )
+    budget = plan.budget
+    profile = plan.profile
 
     st.divider()
 
@@ -1015,8 +998,7 @@ def display_budget_breakdown(
 
     st.progress(
         min(
-            budget_used_percent
-            / 100.0,
+            budget_used_percent / 100.0,
             1.0,
         )
     )
@@ -1106,9 +1088,7 @@ def display_budget_breakdown(
 def display_trip_plan(
     plan: TripPlan,
 ) -> None:
-    """
-    Render all outputs from one unified TripPlan.
-    """
+    """Render all outputs from one unified TripPlan."""
 
     display_recommendations(
         plan
@@ -1132,46 +1112,28 @@ def display_trip_plan(
 
 
 def main() -> None:
-    st.title(
-        "\U0001F1F1\U0001F1F0 CeylonCompass"
+    """Render the complete Ceylon Compass application."""
+
+    render_hero()
+
+    render_section_intro(
+        title="Design your Sri Lankan escape",
+        description=(
+            "Tell us how you like to travel. "
+            "Ceylon Compass will shape the recommendations "
+            "around your choices."
+        ),
+        icon="🧳",
     )
 
-    st.subheader(
-        "Smart Sri Lanka Travel Recommendation "
-        "& Route Optimization"
-    )
+    with st.container(border=True):
+        col1, col2 = st.columns(
+            2,
+            gap="large",
+        )
 
-    st.write(
-        """
-        Generate a personalized Sri Lankan journey
-        using traveller interests, budget, travel style,
-        crowd preference, live weather intelligence,
-        geographic route efficiency and OR-Tools route
-        optimization.
-        """
-    )
-
-    st.info(
-        "CeylonCompass V1 uses one integrated planning "
-        "pipeline for recommendation, weather-aware "
-        "ranking, route optimization, itinerary "
-        "scheduling, interactive mapping and budget "
-        "estimation."
-    )
-
-    st.divider()
-
-    st.header(
-        "Plan Your Trip"
-    )
-
-    col1, col2 = (
-        st.columns(2)
-    )
-
-    with col1:
-        starting_point = (
-            st.selectbox(
+        with col1:
+            starting_point = st.selectbox(
                 "Starting Point",
                 [
                     "Colombo",
@@ -1180,68 +1142,77 @@ def main() -> None:
                     "Jaffna",
                     "Negombo",
                 ],
+                help="Choose where your journey begins.",
             )
-        )
 
-        trip_days = (
-            st.slider(
+            trip_days = st.slider(
                 "Trip Duration (Days)",
                 min_value=1,
                 max_value=14,
                 value=5,
+                help=(
+                    "Choose a trip duration between "
+                    "1 and 14 days."
+                ),
             )
-        )
 
-        budget = (
-            st.number_input(
+            budget = st.number_input(
                 "Total Budget (USD)",
                 min_value=50,
                 max_value=5000,
                 value=500,
                 step=50,
+                help=(
+                    "Enter the estimated total budget "
+                    "for your trip."
+                ),
             )
-        )
 
-    with col2:
-        travel_style = (
-            st.selectbox(
+        with col2:
+            travel_style = st.selectbox(
                 "Travel Style",
                 [
                     "Budget",
                     "Balanced",
                     "Comfort",
                 ],
+                help=(
+                    "The travel style controls the cost "
+                    "assumptions used by the budget model."
+                ),
             )
-        )
 
-        crowd_preference = (
-            st.selectbox(
+            crowd_preference = st.selectbox(
                 "Crowd Preference",
                 [
                     "No Preference",
                     "Prefer Less Crowded Places",
                     "Popular Tourist Places",
                 ],
+                help=(
+                    "Choose whether you prefer quieter "
+                    "destinations or popular attractions."
+                ),
             )
-        )
 
-        transport = (
-            st.selectbox(
+            transport = st.selectbox(
                 "Preferred Transport",
                 [
                     "Public Transport",
                     "Mixed Transport",
                     "Private Vehicle",
                 ],
+                help=(
+                    "Your transport choice is used when "
+                    "estimating route costs."
+                ),
             )
+
+        st.markdown(
+            "### What would you love to experience?"
         )
 
-    st.subheader(
-        "Your Interests"
-    )
-
-    interests = (
-        st.multiselect(
+        interests = st.multiselect(
             "Select one or more interests",
             [
                 "Beach",
@@ -1255,147 +1226,137 @@ def main() -> None:
             default=[
                 "Nature",
             ],
+            help=(
+                "Select multiple interests to receive "
+                "more personalized recommendations."
+            ),
         )
-    )
 
-    st.divider()
+    st.markdown("")
 
-    if st.button(
-        "Generate Smart Trip",
+    generate_trip = st.button(
+        "✨ Create My Smart Journey",
         type="primary",
         use_container_width=True,
-    ):
+    )
+
+    if generate_trip:
         if not interests:
             st.warning(
-                "Please select at least one "
-                "travel interest."
+                "Please select at least one travel interest."
             )
 
+            render_footer()
             return
 
         try:
-            profile = (
-                TravellerProfile(
-                    starting_point=(
-                        starting_point
-                    ),
-                    trip_days=(
-                        trip_days
-                    ),
-                    budget_usd=float(
-                        budget
-                    ),
-                    travel_style=(
-                        travel_style
-                    ),
-                    crowd_preference=(
-                        crowd_preference
-                    ),
-                    transport=(
-                        transport
-                    ),
-                    interests=tuple(
-                        interests
-                    ),
-                )
+            profile = TravellerProfile(
+                starting_point=starting_point,
+                trip_days=trip_days,
+                budget_usd=float(budget),
+                travel_style=travel_style,
+                crowd_preference=crowd_preference,
+                transport=transport,
+                interests=tuple(interests),
             )
 
             st.success(
-                "Traveller profile processed "
+                "Your traveller profile was processed "
                 "successfully."
             )
 
-            st.subheader(
-                "Traveller Profile"
+            render_section_intro(
+                title="Your traveller profile",
+                description=(
+                    "A summary of the preferences being used "
+                    "to create your personalized journey."
+                ),
+                icon="👤",
             )
 
             profile_col1, profile_col2, profile_col3 = (
-                st.columns(3)
+                st.columns(
+                    3,
+                    gap="medium",
+                )
             )
 
             profile_col1.metric(
                 "Trip Duration",
-                (
-                    f"{profile.trip_days} days"
-                ),
+                f"{profile.trip_days} days",
             )
 
             profile_col2.metric(
                 "Total Budget",
-                (
-                    f"${profile.budget_usd:.0f}"
-                ),
+                f"${profile.budget_usd:.0f}",
             )
 
             profile_col3.metric(
                 "Daily Budget",
-                (
-                    f"${profile.daily_budget():.2f}"
-                ),
+                f"${profile.daily_budget():.2f}",
             )
 
-            st.write(
-                f"**Starting Point:** "
-                f"{profile.starting_point}"
-            )
-
-            st.write(
-                f"**Travel Style:** "
-                f"{profile.travel_style}"
-            )
-
-            st.write(
-                f"**Crowd Preference:** "
-                f"{profile.crowd_preference}"
-            )
-
-            st.write(
-                f"**Transport:** "
-                f"{profile.transport}"
-            )
-
-            st.write(
-                f"**Interests:** "
-                f"{', '.join(profile.interests)}"
-            )
-
-            st.divider()
-
-            with st.spinner(
-                "Generating recommendations, "
-                "retrieving weather, optimizing route "
-                "and building your itinerary..."
-            ):
-                plan = (
-                    generate_trip_plan(
-                        profile=profile,
-                        weather_fetcher=(
-                            get_cached_weather_forecast
-                        ),
-                    )
+            with st.container(border=True):
+                detail_col1, detail_col2 = st.columns(
+                    2,
+                    gap="large",
                 )
 
-            display_trip_plan(
-                plan
-            )
+                with detail_col1:
+                    st.markdown(
+                        f"**📍 Starting Point:** "
+                        f"{profile.starting_point}"
+                    )
+
+                    st.markdown(
+                        f"**🎒 Travel Style:** "
+                        f"{profile.travel_style}"
+                    )
+
+                    st.markdown(
+                        f"**👥 Crowd Preference:** "
+                        f"{profile.crowd_preference}"
+                    )
+
+                with detail_col2:
+                    st.markdown(
+                        f"**🚗 Transport:** "
+                        f"{profile.transport}"
+                    )
+
+                    st.markdown(
+                        f"**✨ Interests:** "
+                        f"{', '.join(profile.interests)}"
+                    )
+
+                    st.markdown(
+                        f"**🗓️ Planned Duration:** "
+                        f"{profile.trip_days} days"
+                    )
+
+            with st.spinner(
+                "Building your Sri Lankan journey: "
+                "ranking destinations, retrieving weather, "
+                "optimizing the route and preparing the "
+                "itinerary..."
+            ):
+                plan = generate_trip_plan(
+                    profile=profile,
+                    weather_fetcher=(
+                        get_cached_weather_forecast
+                    ),
+                )
+
+            display_trip_plan(plan)
 
         except (
             TypeError,
             ValueError,
             RuntimeError,
         ) as error:
-            st.error(
-                str(error)
-            )
+            st.error(str(error))
 
-    st.divider()
-
-    st.caption(
-        "CeylonCompass V1 • Explainable Recommendation "
-        "• Weather-Aware Weighted Ranking "
-        "• Route Optimization • Interactive Mapping "
-        "• Itinerary Planning • Budget Estimation"
-    )
+    render_footer()
 
 
 if __name__ == "__main__":
