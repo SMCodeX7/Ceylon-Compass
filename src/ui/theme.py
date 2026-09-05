@@ -855,7 +855,8 @@ def render_sidebar_brand() -> None:
 def render_hero() -> None:
     """Display the main Ceylon Compass hero section."""
 
-    hero_html = """
+    hero_html = dedent(
+    """
 <section class="cc-hero">
     <div class="cc-hero-eyebrow">
         Ceylon Compass
@@ -891,6 +892,7 @@ def render_hero() -> None:
 
 </div>
 """
+    )
 
     st.markdown(
         hero_html,
