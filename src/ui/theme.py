@@ -1,6 +1,7 @@
 """Visual theme and reusable UI components for Ceylon Compass."""
 
 from html import escape
+from textwrap import dedent
 from typing import Iterable
 
 import streamlit as st
@@ -834,14 +835,14 @@ def render_sidebar_brand() -> None:
 
     sidebar_html = """
 <div class="cc-sidebar-brand">
-<div class="cc-sidebar-mark">🧭</div>
-<h3>Ceylon Compass</h3>
-<p>Your intelligent Sri Lanka journey planner</p>
+    <div class="cc-sidebar-mark">🧭</div>
+    <h3>Ceylon Compass</h3>
+    <p>Your intelligent Sri Lanka journey planner</p>
 </div>
 <div class="cc-sidebar-note">
-<strong>Free and explainable planning</strong>
-<br>
-Live weather • Smart ranking • Optimized routes
+    <strong>Free and explainable planning</strong>
+    <br>
+    Live weather • Smart ranking • Optimized routes
 </div>
 """
 
@@ -856,15 +857,38 @@ def render_hero() -> None:
 
     hero_html = """
 <section class="cc-hero">
-<div class="cc-hero-eyebrow">🇱🇰 Explore Sri Lanka intelligently</div>
-<h1>Your island journey, planned around you.</h1>
-<p>Discover destinations that match your interests, budget and travel style. Then turn them into a weather-aware, route-optimized Sri Lankan itinerary.</p>
+    <div class="cc-hero-eyebrow">
+        Ceylon Compass
+    </div>
+
+    <h1>
+        Intelligent travel planning for Sri Lanka.
+    </h1>
+
+    <p>
+        Create personalized travel plans using destination recommendations,
+        route optimization, weather information, and budget-aware planning.
+    </p>
 </section>
+
 <div class="cc-feature-strip">
-<div class="cc-feature">✨ Personal ranking</div>
-<div class="cc-feature">☀️ Live weather</div>
-<div class="cc-feature">🗺️ Optimized route</div>
-<div class="cc-feature">💰 Clear budget</div>
+
+    <div class="cc-feature">
+        Personalized recommendations
+    </div>
+
+    <div class="cc-feature">
+        Weather-aware planning
+    </div>
+
+    <div class="cc-feature">
+        Optimized travel routes
+    </div>
+
+    <div class="cc-feature">
+        Budget estimation
+    </div>
+
 </div>
 """
 
