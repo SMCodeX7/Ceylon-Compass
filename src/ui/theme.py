@@ -894,10 +894,7 @@ def render_hero() -> None:
         """
     )
 
-    st.markdown(
-        hero_html,
-        unsafe_allow_html=True,
-    )
+    st.html(hero_html)
 
 
 def render_section_intro(
