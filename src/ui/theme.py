@@ -856,42 +856,42 @@ def render_hero() -> None:
     """Display the main Ceylon Compass hero section."""
 
     hero_html = dedent(
-    """
-<section class="cc-hero">
-    <div class="cc-hero-eyebrow">
-        Ceylon Compass
-    </div>
+        """
+        <section class="cc-hero">
+            <div class="cc-hero-eyebrow">
+                Ceylon Compass
+            </div>
 
-    <h1>
-        Intelligent travel planning for Sri Lanka.
-    </h1>
+            <h1>
+                Intelligent travel planning for Sri Lanka.
+            </h1>
 
-    <p>
-        Create personalized travel plans using destination recommendations,
-        route optimization, weather information, and budget-aware planning.
-    </p>
-</section>
+            <p>
+                Create personalized travel plans using destination recommendations,
+                route optimization, weather information, and budget-aware planning.
+            </p>
+        </section>
 
-<div class="cc-feature-strip">
+        <div class="cc-feature-strip">
 
-    <div class="cc-feature">
-        Personalized recommendations
-    </div>
+            <div class="cc-feature">
+                Personalized recommendations
+            </div>
 
-    <div class="cc-feature">
-        Weather-aware planning
-    </div>
+            <div class="cc-feature">
+                Weather-aware planning
+            </div>
 
-    <div class="cc-feature">
-        Optimized travel routes
-    </div>
+            <div class="cc-feature">
+                Optimized travel routes
+            </div>
 
-    <div class="cc-feature">
-        Budget estimation
-    </div>
+            <div class="cc-feature">
+                Budget estimation
+            </div>
 
-</div>
-"""
+        </div>
+        """
     )
 
     st.markdown(
