@@ -13,17 +13,21 @@ def apply_ceylon_compass_theme() -> None:
         """
 <style>
 :root {
-    --cc-ocean: #087E8B;
-    --cc-ocean-dark: #075A65;
-    --cc-ocean-light: #DFF4F2;
-    --cc-green: #24966D;
-    --cc-green-dark: #147052;
-    --cc-green-light: #E4F4EC;
-    --cc-sand: #F7E7C6;
-    --cc-sand-light: #FFF9EC;
-    --cc-ink: #16323A;
-    --cc-muted: #5E7479;
-    --cc-border: #D7E7E4;
+    --cc-ocean: #176B87;
+    --cc-ocean-dark: #124E63;
+    --cc-ocean-light: #E8F3F7;
+
+    --cc-green: #2F7D5A;
+    --cc-green-dark: #256246;
+    --cc-green-light: #EAF5EF;
+
+    --cc-sand: #E8D8B5;
+    --cc-sand-light: #FAF7EF;
+
+    --cc-ink: #1F2933;
+    --cc-muted: #52636F;
+    --cc-border: #D9E2E7;
+
     --cc-white: #FFFFFF;
 }
 
@@ -39,18 +43,7 @@ body,
 
 [data-testid="stAppViewContainer"] {
     color: var(--cc-ink);
-    background:
-        radial-gradient(
-            circle at 94% 3%,
-            rgba(72, 188, 169, 0.16),
-            transparent 24rem
-        ),
-        linear-gradient(
-            180deg,
-            #F7FCFB 0%,
-            #FFFFFF 34%,
-            #FFFDF8 100%
-        );
+    background: #F8FAFB;
 }
 
 [data-testid="stHeader"] {
@@ -77,8 +70,8 @@ h4,
 h5,
 h6 {
     color: var(--cc-ink) !important;
-    font-weight: 750 !important;
-    letter-spacing: -0.025em;
+    font-weight: 700 !important;
+    letter-spacing: -0.015em;
 }
 
 h2 {
@@ -94,14 +87,8 @@ h2 {
 /* Sidebar */
 
 [data-testid="stSidebar"] {
-    border-right: 0;
-    background:
-        linear-gradient(
-            180deg,
-            #075A65 0%,
-            #087E8B 52%,
-            #24966D 100%
-        );
+    border-right: 1px solid rgba(255,255,255,0.15);
+    background: var(--cc-ocean-dark);
 }
 
 [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] {
@@ -172,19 +159,13 @@ h2 {
     padding: clamp(2rem, 5vw, 4.2rem);
     border-radius: 1.7rem;
     background:
-        radial-gradient(
-            circle at 82% 22%,
-            rgba(247, 231, 198, 0.46),
-            transparent 16rem
-        ),
         linear-gradient(
-            125deg,
-            #075A65 0%,
-            #087E8B 54%,
-            #24966D 100%
+            120deg,
+            var(--cc-ocean-dark),
+            var(--cc-ocean)
         );
     box-shadow:
-        0 20px 50px rgba(7, 90, 101, 0.24);
+        0 12px 30px rgba(31, 41, 51, 0.14);
 }
 
 .cc-hero::after {
