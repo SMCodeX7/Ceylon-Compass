@@ -333,40 +333,6 @@ def display_recommendations(
 
     display_scoring_methodology()
 
-    display_df = recommendations[
-        [
-            "final_recommendation_rank",
-            "name",
-            "category",
-            "estimated_daily_cost_usd",
-            "preference_score",
-            "budget_score",
-            "ranking_weather_score",
-            "crowd_score",
-            "route_efficiency_score",
-            "final_score",
-        ]
-    ].copy()
-
-    display_df.columns = [
-        "Rank",
-        "Destination",
-        "Category",
-        "Daily Cost (USD)",
-        "Interest Match",
-        "Budget Match",
-        "Weather",
-        "Crowd Match",
-        "Route Efficiency",
-        "Final Score",
-    ]
-
-    st.dataframe(
-        display_df,
-        use_container_width=True,
-        hide_index=True,
-    )
-
     st.subheader(
         "Recommendation Details"
     )
