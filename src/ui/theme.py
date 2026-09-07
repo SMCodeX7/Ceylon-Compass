@@ -443,8 +443,8 @@ h2 {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    padding: 1.2rem 1.35rem;
+    gap: 1.5rem;
+    padding: 1.5rem 1.6rem;
     background:
         linear-gradient(
             110deg,
@@ -461,50 +461,33 @@ h2 {
     gap: 0.8rem;
 }
 
-.cc-profile-icon {
-    display: grid;
-    flex: 0 0 auto;
-    place-items: center;
-    width: 2.8rem;
-    height: 2.8rem;
-    border-radius: 0.9rem;
-    background:
-        linear-gradient(
-            135deg,
-            var(--cc-ocean),
-            var(--cc-green)
-        );
-    color: #FFFFFF;
-    font-size: 1.25rem;
-    box-shadow: 0 8px 18px rgba(8, 126, 139, 0.20);
-}
-
 .cc-profile-heading h3 {
     margin: 0 !important;
     padding: 0 !important;
     border: 0 !important;
     color: var(--cc-ink) !important;
-    font-size: 1.15rem !important;
+    font-size: 1.3rem !important;
 }
 
 .cc-profile-heading p {
-    margin: 0.2rem 0 0;
+    margin: 0.3rem 0 0;
     color: var(--cc-muted) !important;
-    font-size: 0.84rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
 }
 
 .cc-profile-status {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.45rem;
     flex: 0 0 auto;
-    padding: 0.5rem 0.75rem;
+    padding: 0.55rem 0.9rem;
     border: 1px solid rgba(36, 150, 109, 0.22);
     border-radius: 999px;
     background: var(--cc-green-light);
     color: var(--cc-green-dark) !important;
-    font-size: 0.78rem;
-    font-weight: 800;
+    font-size: 0.82rem;
+    font-weight: 750;
 }
 
 .cc-profile-status-dot {
@@ -525,8 +508,8 @@ h2 {
 .cc-profile-stat {
     position: relative;
     overflow: hidden;
-    min-height: 7.8rem;
-    padding: 1.1rem;
+    min-height: 8.8rem;
+    padding: 1.25rem  1.35rem;
     border: 1px solid var(--cc-border);
     border-radius: 1rem;
     background:
@@ -535,40 +518,27 @@ h2 {
             #FFFFFF,
             #F0F8F6
         );
-}
-
-.cc-profile-stat::after {
-    content: "";
-    position: absolute;
-    right: -1.8rem;
-    bottom: -2.2rem;
-    width: 5rem;
-    height: 5rem;
-    border-radius: 50%;
-    background: rgba(8, 126, 139, 0.07);
-}
-
-.cc-profile-stat-icon {
-    margin-bottom: 0.55rem;
-    font-size: 1.15rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .cc-profile-stat-label {
     color: var(--cc-muted) !important;
-    font-size: 0.78rem;
+    font-size: 0.85rem;
     font-weight: 700;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
+    letter-spacing: 0;
+    text-transformation: none;
 }
 
 .cc-profile-stat-value {
     position: relative;
     z-index: 1;
-    margin-top: 0.25rem;
+    margin-top: 0.8rem;
     color: var(--cc-ink) !important;
-    font-size: clamp(1.55rem, 3vw, 2rem);
-    font-weight: 850;
-    letter-spacing: -0.04em;
+    font-size: clamp(1.7rem, 3vw, 2.1rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
 }
 
 .cc-profile-details {
@@ -599,29 +569,21 @@ h2 {
 .cc-profile-detail-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.75rem;
+    gap: 1rem;
 }
 
 .cc-profile-detail {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.9rem;
     min-width: 0;
-    padding: 0.85rem;
-    border: 1px solid rgba(215, 231, 228, 0.9);
-    border-radius: 0.85rem;
-    background: rgba(255, 255, 255, 0.80);
-}
-
-.cc-profile-detail-icon {
-    display: grid;
-    flex: 0 0 auto;
-    place-items: center;
-    width: 2.35rem;
-    height: 2.35rem;
-    border-radius: 0.75rem;
-    background: var(--cc-ocean-light);
-    font-size: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--cc-border);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.92);
+    transition:
+        transform 160ms ease,
+        box-shadow 160ms ease;
 }
 
 .cc-profile-detail-content {
@@ -630,16 +592,17 @@ h2 {
 
 .cc-profile-detail-label {
     color: var(--cc-muted) !important;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
+    font-size: 0.82rem;
+    font-weight: 650;
+    letter-spacing: 0;
+    text-transform: none;
 }
 
 .cc-profile-detail-value {
     overflow: hidden;
-    margin-top: 0.12rem;
+    margin-top: 0.25rem;
     color: var(--cc-ink) !important;
-    font-size: 0.92rem;
+    font-size: 1rem;
     font-weight: 750;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -961,18 +924,17 @@ def render_traveller_profile(
 <div class="cc-profile-header">
 
 <div class="cc-profile-heading">
-<div class="cc-profile-icon">Profile</div>
 
 <div>
 <h3>Traveller profile</h3>
-<p>The preferences used to generate your personalized travel plan.</p>
+<p>Your travel preferences and constraints used for recommendation generation.</p>
 </div>
 
 </div>
 
 <div class="cc-profile-status">
 <span class="cc-profile-status-dot"></span>
-Preferences captured
+Ready for recommendations
 </div>
 
 </div>
@@ -1005,7 +967,7 @@ ${safe_budget:,.0f}
 Daily budget
 </div>
 <div class="cc-profile-stat-value">
-${safe_daily_budget:,.2f}
+${safe_daily_budget:,.0f}/day
 </div>
 </div>
 
@@ -1015,7 +977,7 @@ ${safe_daily_budget:,.2f}
 <div class="cc-profile-details">
 
 <div class="cc-profile-details-title">
-Travel preferences
+Journey preferences
 </div>
 
 
