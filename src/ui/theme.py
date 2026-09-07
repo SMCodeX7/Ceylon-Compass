@@ -900,18 +900,21 @@ def render_hero() -> None:
 def render_section_intro(
     title: str,
     description: str,
-    icon: str,
+    icon: str = "",
 ) -> None:
     """Display a consistent introduction for an application section."""
 
     safe_title = escape(title)
     safe_description = escape(description)
-    safe_icon = escape(icon)
 
     section_html = f"""
 <div class="cc-section-intro">
-<div class="cc-section-label"><span>{safe_icon}</span><span>Ceylon Compass</span></div>
+<div class="cc-section-label">
+    <span>Ceylon Compass</span>
+</div>
+
 <h2>{safe_title}</h2>
+
 <p>{safe_description}</p>
 </div>
 """
@@ -946,7 +949,7 @@ def render_traveller_profile(
     interest_chips = "".join(
         (
             '<span class="cc-profile-chip">'
-            f"✨ {escape(str(interest))}"
+            f"{escape(str(interest))}"
             "</span>"
         )
         for interest in interests
@@ -954,73 +957,157 @@ def render_traveller_profile(
 
     profile_html = f"""
 <section class="cc-profile">
+
 <div class="cc-profile-header">
+
 <div class="cc-profile-heading">
-<div class="cc-profile-icon">🧳</div>
+<div class="cc-profile-icon">Profile</div>
+
 <div>
-<h3>Your journey profile</h3>
-<p>The travel preferences used to build your personalized itinerary.</p>
+<h3>Traveller profile</h3>
+<p>The preferences used to generate your personalized travel plan.</p>
 </div>
+
 </div>
+
 <div class="cc-profile-status">
 <span class="cc-profile-status-dot"></span>
-Profile ready
+Preferences captured
 </div>
+
 </div>
+
+
 <div class="cc-profile-stats">
+
 <div class="cc-profile-stat">
-<div class="cc-profile-stat-icon">🗓️</div>
-<div class="cc-profile-stat-label">Trip duration</div>
-<div class="cc-profile-stat-value">{safe_trip_days} days</div>
+<div class="cc-profile-stat-label">
+Trip duration
 </div>
+<div class="cc-profile-stat-value">
+{safe_trip_days} days
+</div>
+</div>
+
+
 <div class="cc-profile-stat">
-<div class="cc-profile-stat-icon">💳</div>
-<div class="cc-profile-stat-label">Total budget</div>
-<div class="cc-profile-stat-value">${safe_budget:,.0f}</div>
+<div class="cc-profile-stat-label">
+Total budget
 </div>
+<div class="cc-profile-stat-value">
+${safe_budget:,.0f}
+</div>
+</div>
+
+
 <div class="cc-profile-stat">
-<div class="cc-profile-stat-icon">☀️</div>
-<div class="cc-profile-stat-label">Daily budget</div>
-<div class="cc-profile-stat-value">${safe_daily_budget:,.2f}</div>
+<div class="cc-profile-stat-label">
+Daily budget
+</div>
+<div class="cc-profile-stat-value">
+${safe_daily_budget:,.2f}
 </div>
 </div>
+
+</div>
+
+
 <div class="cc-profile-details">
-<div class="cc-profile-details-title">🪪 Travel profile details</div>
+
+<div class="cc-profile-details-title">
+Travel preferences
+</div>
+
+
 <div class="cc-profile-detail-grid">
+
+
 <div class="cc-profile-detail">
-<div class="cc-profile-detail-icon">📍</div>
+
 <div class="cc-profile-detail-content">
-<div class="cc-profile-detail-label">Starting point</div>
-<div class="cc-profile-detail-value">{safe_starting_point}</div>
+
+<div class="cc-profile-detail-label">
+Starting point
 </div>
+
+<div class="cc-profile-detail-value">
+{safe_starting_point}
 </div>
+
+</div>
+
+</div>
+
+
 <div class="cc-profile-detail">
-<div class="cc-profile-detail-icon">🎒</div>
+
 <div class="cc-profile-detail-content">
-<div class="cc-profile-detail-label">Travel style</div>
-<div class="cc-profile-detail-value">{safe_travel_style}</div>
+
+<div class="cc-profile-detail-label">
+Travel style
 </div>
+
+<div class="cc-profile-detail-value">
+{safe_travel_style}
 </div>
+
+</div>
+
+</div>
+
+
 <div class="cc-profile-detail">
-<div class="cc-profile-detail-icon">👥</div>
+
 <div class="cc-profile-detail-content">
-<div class="cc-profile-detail-label">Crowd preference</div>
-<div class="cc-profile-detail-value">{safe_crowd_preference}</div>
+
+<div class="cc-profile-detail-label">
+Crowd preference
 </div>
+
+<div class="cc-profile-detail-value">
+{safe_crowd_preference}
 </div>
+
+</div>
+
+</div>
+
+
 <div class="cc-profile-detail">
-<div class="cc-profile-detail-icon">🚗</div>
+
 <div class="cc-profile-detail-content">
-<div class="cc-profile-detail-label">Preferred transport</div>
-<div class="cc-profile-detail-value">{safe_transport}</div>
+
+<div class="cc-profile-detail-label">
+Preferred transport
 </div>
+
+<div class="cc-profile-detail-value">
+{safe_transport}
 </div>
+
 </div>
+
+</div>
+
+
+</div>
+
+
 <div class="cc-profile-interests">
-<div class="cc-profile-interests-label">Selected interests</div>
-<div class="cc-profile-chips">{interest_chips}</div>
+
+<div class="cc-profile-interests-label">
+Selected interests
 </div>
+
+<div class="cc-profile-chips">
+{interest_chips}
 </div>
+
+</div>
+
+
+</div>
+
 </section>
 """
 
