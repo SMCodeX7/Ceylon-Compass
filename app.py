@@ -690,6 +690,10 @@ def display_itinerary(
             .unique()
         )
 
+        itinerary_html = [
+            '<div class="cc-itinerary-container">'
+        ]
+
         for day in itinerary_days:
             day_number = int(
                 day
@@ -713,85 +717,128 @@ def display_itinerary(
                 ].sum()
             )
 
-            with st.expander(
-                (
-                    f"Day {day_number} "
-                    f"— {day_hours:.1f} activity hours"
-                ),
-                expanded=True,
-            ):
-                for _, destination in (
-                    day_plan.iterrows()
+            itinerary_html.append(
+                f'<details class="cc-itinerary-card '
+                f'cc-itinerary-day-card" open>'
+                f'<summary class="cc-itinerary-header">'
+                f'Day {day_number} | '
+                f'{day_hours:.1f} activity hours'
+                f'</summary>'
+            )
+
+            for _, destination in day_plan.iterrows():
+                destination_name = escape(
+                    str(destination["name"])
+                )
+                destination_location = escape(
+                    f'{destination["district"]} District, '
+                    f'{destination["province"]} Province'
+                )
+                category = escape(
+                    str(destination["category"])
+                )
+                duration_hours = float(
+                    destination[
+                        "recommended_duration_hours"
+                    ]
+                )
+                estimated_daily_cost = float(
+                    destination[
+                        "estimated_daily_cost_usd"
+                    ]
+                )
+                travel_distance = float(
+                    destination[
+                        "distance_from_previous_km"
+                    ]
+                )
+
+                itinerary_html.append(
+                    '<article class="cc-itinerary-item '
+                    'cc-itinerary-destination">'
+                    '<div class="cc-itinerary-header">'
+                    f'<h3>{int(destination["visit_order_in_day"])}. '
+                    f'{destination_name}</h3>'
+                    f'<p>{destination_location}</p>'
+                    '</div>'
+                    '<div class="cc-itinerary-details">'
+                    '<div class="cc-itinerary-activity-list">'
+                    '<strong>Activity</strong>'
+                    f'<span>{category}</span>'
+                    '</div>'
+                    '<div>'
+                    '<strong class="cc-itinerary-duration">'
+                    'Duration</strong>'
+                    f'<span>{duration_hours:.0f} hours</span>'
+                    '</div>'
+                    '<div>'
+                    '<strong class="cc-itinerary-cost">'
+                    'Estimated cost</strong>'
+                    f'<span>${estimated_daily_cost:.0f} per day</span>'
+                    '</div>'
+                    '<div>'
+                    '<strong>Travel from previous stop</strong>'
+                    f'<span>{travel_distance:.1f} km</span>'
+                    '</div>'
+                    '</div>'
+                )
+
+                if bool(
+                    destination[
+                        "weather_available"
+                    ]
                 ):
-                    st.markdown(
-                        f"### "
-                        f"{int(destination['visit_order_in_day'])}. "
-                        f"{destination['name']}"
+                    weather_description = escape(
+                        str(destination[
+                            "weather_description"
+                        ])
+                    )
+                    weather_date = escape(
+                        str(destination[
+                            "weather_date"
+                        ])
+                    )
+                    weather_suitability = escape(
+                        str(destination[
+                            "weather_suitability"
+                        ])
+                    )
+                    itinerary_html.append(
+                        '<div class="cc-itinerary-details '
+                        'cc-itinerary-weather">'
+                        '<div>'
+                        '<strong>Forecast</strong>'
+                        f'<span>{weather_description}</span>'
+                        f'<small>Forecast date: {weather_date}</small>'
+                        '</div>'
+                        '<div>'
+                        '<strong>Weather suitability</strong>'
+                        f'<span>{float(destination["weather_score"]):.1f}% '
+                        f'{weather_suitability}</span>'
+                        f'<small>Rain probability: '
+                        f'{float(destination["weather_rain_probability"]):.0f}%'
+                        '</small>'
+                        '</div>'
+                        '</div>'
+                    )
+                else:
+                    itinerary_html.append(
+                        '<p>Live weather is unavailable '
+                        'for this itinerary stop.</p>'
                     )
 
-                    detail_col1, detail_col2, detail_col3 = (
-                        st.columns(3)
-                    )
+                itinerary_html.append(
+                    '</article>'
+                )
 
-                    detail_col1.write(
-                        f"**Category:** "
-                        f"{destination['category']}"
-                    )
+            itinerary_html.append(
+                '</details>'
+            )
 
-                    detail_col2.write(
-                        f"**Visit Duration:** "
-                        f"{float(destination['recommended_duration_hours']):.0f} "
-                        f"hours"
-                    )
-
-                    detail_col3.write(
-                        f"**Travel Distance:** "
-                        f"{float(destination['distance_from_previous_km']):.1f} "
-                        f"km"
-                    )
-
-                    st.write(
-                        f"**Location:** "
-                        f"{destination['district']} District, "
-                        f"{destination['province']} Province"
-                    )
-
-                    if bool(
-                        destination[
-                            "weather_available"
-                        ]
-                    ):
-                        weather_col1, weather_col2 = (
-                            st.columns(2)
-                        )
-
-                        weather_col1.write(
-                            f"**Weather:** "
-                            f"{destination['weather_description']}"
-                        )
-
-                        weather_col1.write(
-                            f"**Forecast Date:** "
-                            f"{destination['weather_date']}"
-                        )
-
-                        weather_col2.write(
-                            f"**Weather Suitability:** "
-                            f"{float(destination['weather_score']):.1f}% "
-                            f"({destination['weather_suitability']})"
-                        )
-
-                        weather_col2.write(
-                            f"**Rain Probability:** "
-                            f"{float(destination['weather_rain_probability']):.0f}%"
-                        )
-                    else:
-                        st.caption(
-                            "Live weather is unavailable "
-                            "for this itinerary stop."
-                        )
-
-                    st.divider()
+        itinerary_html.append(
+            '</div>'
+        )
+        st.html("".join(itinerary_html))
 
     unscheduled = itinerary[
         ~itinerary[
@@ -808,29 +855,34 @@ def display_itinerary(
             f"activity limit."
         )
 
-        unscheduled_display = (
-            unscheduled[
-                [
-                    "name",
-                    "category",
-                    "recommended_duration_hours",
-                    "final_score",
-                ]
-            ].copy()
-        )
+        for _, destination in unscheduled.iterrows():
+            with st.container(border=True):
+                destination_col, duration_col, score_col = st.columns(
+                    [2, 1, 1]
+                )
 
-        unscheduled_display.columns = [
-            "Destination",
-            "Category",
-            "Required Activity Hours",
-            "Final Score",
-        ]
+                destination_col.markdown(
+                    f"#### {destination['name']}"
+                )
 
-        st.dataframe(
-            unscheduled_display,
-            use_container_width=True,
-            hide_index=True,
-        )
+                destination_col.caption(
+                    f"{destination['category']} | "
+                    f"{destination['district']} District, "
+                    f"{destination['province']} Province"
+                )
+
+                duration_col.metric(
+                    "Required time",
+                    (
+                        f"{float(destination['recommended_duration_hours']):.0f} "
+                        f"hours"
+                    ),
+                )
+
+                score_col.metric(
+                    "Recommendation score",
+                    f"{float(destination['final_score']):.1f}%",
+                )
 
     st.caption(
         "The current 8-hour daily limit applies to "
@@ -1020,36 +1072,72 @@ def display_budget_breakdown(
         "Estimated Trip Budget"
     )
 
-    col1, col2, col3, col4 = (
-        st.columns(4)
+    daily_average_cost = (
+        budget[
+            "estimated_total_cost_usd"
+        ]
+        / max(
+            int(
+                profile.trip_days
+            ),
+            1,
+        )
     )
 
-    col1.metric(
-        "Available Budget",
-        (
-            f"${budget['total_budget_usd']:.2f}"
-        ),
-    )
+    budget_html = [
+        '<section class="cc-budget-container">',
+        '<h3>Budget summary</h3>',
+        '<div class="cc-budget-summary">',
+        '<div class="cc-budget-summary-card '
+        'cc-budget-total-cost cc-budget-total">',
+        '<span>Total estimated cost</span>',
+        f'<strong>${budget["estimated_total_cost_usd"]:.2f}'
+        '</strong>',
+        '</div>',
+        '<div class="cc-budget-summary-card">',
+        '<span>Daily average cost</span>',
+        f'<strong>${daily_average_cost:.2f}</strong>',
+        '</div>',
+        '<div class="cc-budget-summary-card">',
+        '<span>Available budget</span>',
+        f'<strong>${budget["total_budget_usd"]:.2f}</strong>',
+        '</div>',
+        '</div>',
+        '<h3>Cost breakdown</h3>',
+        '<div class="cc-budget-breakdown">',
+        '<div class="cc-budget-breakdown-row cc-budget-item">',
+        '<span>Activity and destination cost</span>',
+        f'<strong>${budget["destination_cost_usd"]:.2f}</strong>',
+        '</div>',
+        '<div class="cc-budget-breakdown-row cc-budget-item">',
+        '<span>Transport cost</span>',
+        f'<strong>${budget["transport_cost_usd"]:.2f}</strong>',
+        '</div>',
+        '<div class="cc-budget-expense-category '
+        'cc-budget-item">',
+        '<span>Accommodation cost</span>',
+        '<strong>Not modelled</strong>',
+        '</div>',
+        '<div class="cc-budget-expense-category '
+        'cc-budget-item">',
+        '<span>Food cost</span>',
+        '<strong>Not modelled</strong>',
+        '</div>',
+        '<div class="cc-budget-expense-category '
+        'cc-budget-item">',
+        '<span>Other expenses</span>',
+        '<strong>Not modelled</strong>',
+        '</div>',
+        '</div>',
+        '<p>Accommodation, food, and other expenses are not '
+        'included in the current budget model.</p>',
+        '</section>',
+    ]
 
-    col2.metric(
-        "Destination Cost",
-        (
-            f"${budget['destination_cost_usd']:.2f}"
-        ),
-    )
+    st.html("".join(budget_html))
 
-    col3.metric(
-        "Transport Cost",
-        (
-            f"${budget['transport_cost_usd']:.2f}"
-        ),
-    )
-
-    col4.metric(
-        "Estimated Total",
-        (
-            f"${budget['estimated_total_cost_usd']:.2f}"
-        ),
+    st.subheader(
+        "Spending overview"
     )
 
     budget_used_percent = (
@@ -1062,39 +1150,40 @@ def display_budget_breakdown(
         * 100
     )
 
-    st.write(
-        f"**Estimated Budget Used:** "
-        f"{budget_used_percent:.1f}%"
-    )
-
-    st.progress(
-        min(
-            budget_used_percent / 100.0,
-            1.0,
-        )
-    )
-
-    if budget[
-        "within_budget"
-    ]:
-        st.success(
-            f"Estimated trip cost is within budget. "
-            f"Approximately "
-            f"${budget['budget_difference_usd']:.2f} "
-            f"remains available."
-        )
-    else:
-        amount_over = abs(
-            budget[
-                "budget_difference_usd"
-            ]
+    with st.container(border=True):
+        st.write(
+            f"**Estimated budget used:** "
+            f"{budget_used_percent:.1f}%"
         )
 
-        st.error(
-            f"Estimated trip cost exceeds the "
-            f"selected budget by approximately "
-            f"${amount_over:.2f}."
+        st.progress(
+            min(
+                budget_used_percent / 100.0,
+                1.0,
+            )
         )
+
+        if budget[
+            "within_budget"
+        ]:
+            st.success(
+                f"Estimated trip cost is within budget. "
+                f"Approximately "
+                f"${budget['budget_difference_usd']:.2f} "
+                f"remains available."
+            )
+        else:
+            amount_over = abs(
+                budget[
+                    "budget_difference_usd"
+                ]
+            )
+
+            st.error(
+                f"Estimated trip cost exceeds the "
+                f"selected budget by approximately "
+                f"${amount_over:.2f}."
+            )
 
     style_factor = (
         TRAVEL_STYLE_FACTORS[

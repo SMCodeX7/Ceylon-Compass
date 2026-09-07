@@ -837,6 +837,163 @@ h2 {
     border-left: 2px solid var(--cc-green);
 }
 
+/* Itinerary */
+
+.cc-itinerary-container {
+    display: grid;
+    gap: 1rem;
+    margin: 1.2rem 0 1.5rem;
+}
+
+.cc-itinerary-day-card,
+.cc-itinerary-card {
+    min-width: 0;
+    padding: 1.1rem 1.2rem;
+    border: 1px solid var(--cc-border);
+    border-radius: 1rem;
+    background: var(--cc-white);
+    box-shadow: 0 7px 20px rgba(25, 83, 84, 0.06);
+}
+
+.cc-itinerary-destination,
+.cc-itinerary-item {
+    min-width: 0;
+    margin-top: 1rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--cc-border);
+}
+
+.cc-itinerary-destination h3 {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    color: var(--cc-ink) !important;
+    font-size: 1.15rem !important;
+    line-height: 1.25 !important;
+}
+
+.cc-itinerary-activity-list {
+    margin: 0.75rem 0 0;
+    padding-left: 1.1rem;
+    color: var(--cc-muted);
+    line-height: 1.5;
+}
+
+.cc-itinerary-header {
+    color: inherit;
+}
+
+.cc-itinerary-details {
+    min-width: 0;
+}
+
+.cc-itinerary-duration,
+.cc-itinerary-cost {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.95rem;
+    font-weight: 750;
+}
+
+.cc-itinerary-duration {
+    color: var(--cc-ocean);
+}
+
+.cc-itinerary-cost {
+    color: var(--cc-green);
+}
+
+/* Budget presentation */
+
+.cc-budget-container {
+    min-width: 0;
+}
+
+.cc-budget-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.8rem;
+    margin: 1rem 0 1.5rem;
+}
+
+.cc-budget-summary-card {
+    min-width: 0;
+    padding: 1.1rem 1.2rem;
+    border: 1px solid var(--cc-border);
+    border-radius: 1rem;
+    background: var(--cc-white);
+    box-shadow: 0 7px 20px rgba(25, 83, 84, 0.06);
+}
+
+.cc-budget-summary-card span,
+.cc-budget-breakdown-row span,
+.cc-budget-expense-category span {
+    color: var(--cc-muted);
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.cc-budget-summary-card strong {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--cc-ink);
+    font-size: 1.35rem;
+    line-height: 1.2;
+}
+
+.cc-budget-total-cost,
+.cc-budget-total {
+    border-left: 3px solid var(--cc-ocean);
+    background: var(--cc-ocean-light);
+}
+
+.cc-budget-total-cost strong,
+.cc-budget-total strong {
+    color: var(--cc-ocean);
+}
+
+.cc-budget-breakdown {
+    display: grid;
+    gap: 0.75rem;
+    margin: 1rem 0 1.5rem;
+}
+
+.cc-budget-breakdown-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: baseline;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--cc-border);
+    border-radius: 0.85rem;
+    background: var(--cc-white);
+}
+
+.cc-budget-item {
+    min-width: 0;
+}
+
+.cc-budget-breakdown-row strong {
+    color: var(--cc-ink);
+    font-size: 0.95rem;
+    text-align: right;
+}
+
+.cc-budget-expense-category {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 0;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--cc-border);
+    border-radius: 0.85rem;
+    background: rgba(255, 255, 255, 0.88);
+}
+
+.cc-budget-expense-category strong {
+    color: var(--cc-ink);
+    font-size: 0.95rem;
+}
+
 @media (max-width: 640px) {
     .cc-route-card-header,
     .cc-route-details {
@@ -853,6 +1010,23 @@ h2 {
 
     .cc-route-details {
         display: grid;
+    }
+
+    .cc-itinerary-day-card {
+        padding: 1rem;
+    }
+
+    .cc-budget-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .cc-budget-breakdown-row {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+    }
+
+    .cc-budget-breakdown-row strong {
+        text-align: left;
     }
 }
 
