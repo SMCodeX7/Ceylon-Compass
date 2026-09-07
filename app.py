@@ -146,7 +146,6 @@ def render_recommendation_card(
 
     rank = int(destination["final_recommendation_rank"])
     final_score = float(destination["final_score"])
-    score_progress = min(max(final_score, 0.0), 100.0)
     weather_available = bool(destination["weather_component_active"])
     crowd_available = bool(destination["crowd_component_active"])
 
@@ -158,6 +157,13 @@ def render_recommendation_card(
     tradeoffs_html = "".join(
         f"<li>{escape(str(tradeoff))}</li>"
         for tradeoff in explanation["tradeoffs"]
+    )
+
+    explanation_summary = (
+        "Recommended because "
+        f"{str(explanation['reasons'][0]).lower()}."
+        if explanation["reasons"]
+        else "Recommended based on the traveller profile and current trip constraints."
     )
 
     weather_score = (
@@ -207,18 +213,16 @@ def render_recommendation_card(
 </div>
 """
 
-    tradeoffs_section = ""
-    if tradeoffs_html:
-        tradeoffs_section = f"""
+    tradeoffs_section = f"""
 <section class="cc-explanation-block cc-explanation-limitations">
-    <h4>Possible limitations and trade-offs</h4>
-    <ul>{tradeoffs_html}</ul>
+    <h4>Trade-offs</h4>
+    {f"<ul>{tradeoffs_html}</ul>" if tradeoffs_html else "<p class=\"cc-explanation-empty\">No notable trade-offs identified for this profile.</p>"}
 </section>
 """
 
     card_html = f"""
-<details class="cc-recommendation-card">
-    <summary>
+<article class="cc-recommendation-card">
+    <header class="cc-recommendation-header">
         <span class="cc-recommendation-rank">
             <span>Ranking position</span>
             <strong>{rank}</strong>
@@ -227,36 +231,9 @@ def render_recommendation_card(
             <strong>{escape(str(destination['name']))}</strong>
             <span>Recommendation Score {final_score:.1f}%</span>
         </span>
-    </summary>
+    </header>
 
     <div class="cc-recommendation-body">
-        <div class="cc-recommendation-heading">
-            <div>
-                <h3>{escape(str(destination['name']))}</h3>
-                <p>
-                    {escape(str(destination['district']))} District,
-                    {escape(str(destination['province']))} Province
-                </p>
-            </div>
-            <div class="cc-recommendation-score">
-                <div class="cc-recommendation-score-heading">
-                    <span>Recommendation Score</span>
-                    <strong>{final_score:.1f}%</strong>
-                </div>
-                <div
-                    class="cc-recommendation-score-track"
-                    role="progressbar"
-                    aria-label="Recommendation Score"
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                    aria-valuenow="{final_score:.1f}"
-                >
-                    <span style="width: {score_progress:.1f}%"></span>
-                </div>
-                <small>Score range: 0 to 100</small>
-            </div>
-        </div>
-
         <div class="cc-recommendation-facts">
             <div class="cc-recommendation-fact">
                 <span>Category</span>
@@ -278,10 +255,9 @@ def render_recommendation_card(
 
         <section class="cc-recommendation-explanation">
             <div class="cc-explanation-block">
-                <h4>Recommendation reason</h4>
+                <h4>Explanation summary</h4>
                 <p class="cc-explanation-lead">
-                    This destination matches the preferences and constraints
-                    in the current traveller profile.
+                    {escape(explanation_summary)}
                 </p>
                 <ul>{reasons_html}</ul>
             </div>
@@ -304,7 +280,7 @@ def render_recommendation_card(
             </div>
         </details>
     </div>
-</details>
+</article>
 """
 
     st.html(card_html.replace("    ", ""))
@@ -385,23 +361,9 @@ def display_interactive_route_map(
             "Route Overview"
         )
 
-        overview_col1, overview_col2, overview_col3 = (
-            st.columns(3)
-        )
-
-        overview_col1.metric(
+        st.metric(
             "Starting Location",
             plan.profile.starting_point,
-        )
-
-        overview_col2.metric(
-            "Destinations",
-            len(plan.optimized_route),
-        )
-
-        overview_col3.metric(
-            "Route Distance",
-            f"{plan.optimized_route_distance_km:.1f} km",
         )
 
         st.write(
@@ -509,31 +471,8 @@ def display_route(
         )
         return
 
-    if (
-        route_names
-        and route_names[
-            0
-        ].casefold()
-        == plan.profile.starting_point.casefold()
-    ):
-        route_text = " → ".join(
-            route_names
-        )
-    else:
-        route_text = (
-            plan.profile.starting_point
-            + " → "
-            + " → ".join(
-                route_names
-            )
-        )
-
     st.markdown(
         "### Recommended Visit Order"
-    )
-
-    st.write(
-        route_text
     )
 
     with st.container(border=True):
@@ -611,6 +550,9 @@ def display_route(
                             <p class="cc-route-stop-order">
                                 Stop {route_order}
                             </p>
+                            <span class="cc-route-destination-label">
+                                Destination
+                            </span>
                             <h3>{escape(str(destination['name']))}</h3>
                         </div>
                         <div class="cc-route-score">
@@ -788,22 +730,20 @@ def display_itinerary(
                     f'<p>{destination_location}</p>'
                     '</div>'
                     '<div class="cc-itinerary-details">'
-                    '<div class="cc-itinerary-activity-list">'
+                    '<div class="cc-itinerary-field">'
                     '<strong>Activity</strong>'
                     f'<span>{category}</span>'
                     '</div>'
-                    '<div>'
-                    '<strong class="cc-itinerary-duration">'
-                    'Duration</strong>'
+                    '<div class="cc-itinerary-field cc-itinerary-duration">'
+                    '<strong>Duration</strong>'
                     f'<span>{duration_hours:.0f} hours</span>'
                     '</div>'
-                    '<div>'
-                    '<strong class="cc-itinerary-cost">'
-                    'Estimated cost</strong>'
+                    '<div class="cc-itinerary-field cc-itinerary-cost">'
+                    '<strong>Cost</strong>'
                     f'<span>${estimated_daily_cost:.0f} per day</span>'
                     '</div>'
-                    '<div>'
-                    '<strong>Travel from previous stop</strong>'
+                    '<div class="cc-itinerary-field">'
+                    '<strong>Distance</strong>'
                     f'<span>{travel_distance:.1f} km</span>'
                     '</div>'
                     '</div>'
@@ -832,12 +772,12 @@ def display_itinerary(
                     itinerary_html.append(
                         '<div class="cc-itinerary-details '
                         'cc-itinerary-weather">'
-                        '<div>'
-                        '<strong>Forecast</strong>'
+                        '<div class="cc-itinerary-field">'
+                        '<strong>Weather</strong>'
                         f'<span>{weather_description}</span>'
                         f'<small>Forecast date: {weather_date}</small>'
                         '</div>'
-                        '<div>'
+                        '<div class="cc-itinerary-field">'
                         '<strong>Weather suitability</strong>'
                         f'<span>{float(destination["weather_score"]):.1f}% '
                         f'{weather_suitability}</span>'
@@ -925,8 +865,6 @@ def display_weather_intelligence(
     by the unified planning pipeline.
     """
 
-    st.divider()
-
     st.header(
         "Weather Information"
     )
@@ -1012,11 +950,71 @@ def display_weather_intelligence(
         overall_label,
     )
 
-    col4.metric(
-        "Best Weather Stop",
-        best_destination[
-            "name"
-        ],
+    best_weather_stop = escape(
+        str(best_destination["name"])
+    )
+
+    col4.markdown(
+        f"""
+<div style="
+    min-height: 9rem;
+    box-sizing: border-box;
+    padding: 1.35rem 1.4rem 1.25rem;
+    border: 1px solid #DCE4ED;
+    border-left: 5px solid #4F83CC;
+    border-radius: 20px;
+    background: #FFFFFF;
+    box-shadow: 0 12px 30px rgba(31, 55, 89, 0.08);
+">
+    <div style="
+        margin-bottom: 0.55rem;
+        color: #687890;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+    ">
+        Best Weather Stop
+    </div>
+    <div style="
+        overflow-wrap: anywhere;
+        color: #172B4D;
+        font-size: 1.55rem;
+        font-weight: 800;
+        line-height: 1.2;
+        white-space: normal;
+    ">
+        {best_weather_stop}
+    </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    overall_suitability_class = (
+        overall_label.casefold()
+        if overall_label.casefold()
+        in {"excellent", "fair", "poor"}
+        else "neutral"
+    )
+
+    st.html(
+        f"""
+<div class="cc-weather-status-row" aria-label="Weather status">
+    <div class="cc-weather-status-item">
+        <span class="cc-weather-status-label">Itinerary Coverage</span>
+        <span class="cc-status-badge cc-status-weather">
+            {len(available)}/{len(scheduled)} Places Covered
+        </span>
+    </div>
+    <div class="cc-weather-status-item">
+        <span class="cc-weather-status-label">Suitability</span>
+        <span class="cc-status-badge cc-suitability-badge cc-suitability-{overall_suitability_class}">
+            {escape(overall_label)}
+        </span>
+    </div>
+</div>
+""".replace("    ", "")
     )
 
     if (
@@ -1030,40 +1028,88 @@ def display_weather_intelligence(
             f"automatically excluded from final ranking."
         )
 
-    weather_display = (
-        available[
-            [
-                "itinerary_day",
-                "name",
-                "weather_date",
-                "weather_description",
-                "weather_temperature_max_c",
-                "weather_temperature_min_c",
-                "weather_rain_probability",
-                "weather_precipitation_mm",
-                "weather_score",
-                "weather_suitability",
-            ]
-        ].copy()
-    )
+    def weather_condition_icon(condition: object) -> str:
+        normalized_condition = str(condition).casefold()
 
-    weather_display.columns = [
-        "Day",
-        "Destination",
-        "Forecast Date",
-        "Condition",
-        "Max Temp (°C)",
-        "Min Temp (°C)",
-        "Rain Probability (%)",
-        "Rainfall (mm)",
-        "Weather Score",
-        "Suitability",
-    ]
+        if "thunderstorm" in normalized_condition:
+            return "⚡"
+        if "snow" in normalized_condition:
+            return "❄"
+        if "rain" in normalized_condition or "drizzle" in normalized_condition:
+            return "☂"
+        if "fog" in normalized_condition:
+            return "≋"
+        if "overcast" in normalized_condition:
+            return "☁"
+        if "cloud" in normalized_condition or "mainly clear" in normalized_condition:
+            return "◐"
+        if "clear" in normalized_condition:
+            return "☀"
+        return "•"
 
-    st.dataframe(
-        weather_display,
-        width="stretch",
-        hide_index=True,
+    weather_cards = []
+
+    for _, destination in available.iterrows():
+        suitability = str(
+            destination["weather_suitability"]
+        )
+        suitability_class = (
+            suitability.casefold()
+            if suitability.casefold()
+            in {"excellent", "fair", "poor"}
+            else "neutral"
+        )
+        condition = str(
+            destination["weather_description"]
+        )
+
+        weather_cards.append(
+            f"""
+<article class="cc-weather-card">
+    <header class="cc-weather-card-header">
+        <span class="cc-weather-day">
+            Day {int(destination['itinerary_day'])}
+        </span>
+        <div class="cc-weather-destination">
+            <h3>{escape(str(destination['name']))}</h3>
+            <span>Forecast date: {escape(str(destination['weather_date']))}</span>
+        </div>
+    </header>
+    <div class="cc-weather-fields">
+        <div class="cc-weather-field">
+            <span>Condition</span>
+            <strong>{weather_condition_icon(condition)} {escape(condition)}</strong>
+        </div>
+        <div class="cc-weather-field">
+            <span>Temperature</span>
+            <strong>{float(destination['weather_temperature_max_c']):.1f}°C / {float(destination['weather_temperature_min_c']):.1f}°C</strong>
+        </div>
+        <div class="cc-weather-field">
+            <span>Rain probability</span>
+            <strong>{float(destination['weather_rain_probability']):.0f}%</strong>
+            <small>Rainfall: {float(destination['weather_precipitation_mm']):.1f} mm</small>
+        </div>
+        <div class="cc-weather-field">
+            <span>Weather score</span>
+            <strong>{float(destination['weather_score']):.1f}%</strong>
+        </div>
+        <div class="cc-weather-field cc-weather-suitability">
+            <span>Suitability</span>
+            <strong class="cc-suitability-badge cc-suitability-{suitability_class}">
+                {escape(suitability)}
+            </strong>
+        </div>
+    </div>
+</article>
+"""
+        )
+
+    st.html(
+        f"""
+<section class="cc-weather-cards" aria-label="Weather forecast details">
+    {''.join(weather_cards)}
+</section>
+""".replace("    ", "")
     )
 
     st.caption(
@@ -1136,14 +1182,19 @@ def display_budget_breakdown(
         '</div>',
         '<h3>Cost breakdown</h3>',
         '<div class="cc-budget-breakdown">',
-        '<div class="cc-budget-breakdown-row cc-budget-item">',
-        '<span>Activity and destination cost</span>',
+        '<div class="cc-budget-breakdown-row cc-budget-item '
+        'cc-budget-activity">',
+        '<span>Activity and destination</span>',
         f'<strong>${budget["destination_cost_usd"]:.2f}</strong>',
         '</div>',
-        '<div class="cc-budget-breakdown-row cc-budget-item">',
-        '<span>Transport cost</span>',
+        '<div class="cc-budget-breakdown-row cc-budget-item '
+        'cc-budget-transport">',
+        '<span>Transport</span>',
         f'<strong>${budget["transport_cost_usd"]:.2f}</strong>',
         '</div>',
+        '<div class="cc-budget-unmodelled">',
+        '<div class="cc-budget-unmodelled-label">'
+        'Not modelled expenses</div>',
         '<div class="cc-budget-expense-category '
         'cc-budget-item">',
         '<span>Accommodation cost</span>',
@@ -1158,6 +1209,7 @@ def display_budget_breakdown(
         'cc-budget-item">',
         '<span>Other expenses</span>',
         '<strong>Not modelled</strong>',
+        '</div>',
         '</div>',
         '</div>',
         '<p>Accommodation, food, and other expenses are not '
@@ -1281,12 +1333,6 @@ def display_trip_summary(
 ) -> None:
     """Display a compact overview of the generated trip."""
 
-    top_destination = "Unavailable"
-    if not plan.recommendations.empty:
-        top_destination = str(
-            plan.recommendations.iloc[0]["name"]
-        )
-
     scheduled = plan.itinerary[
         plan.itinerary["scheduled"]
     ]
@@ -1297,24 +1343,12 @@ def display_trip_summary(
     summary_html = f"""
 <section class="cc-trip-summary" aria-label="Trip summary">
     <div class="cc-trip-summary-card">
-        <span>Top recommendation</span>
-        <strong>{escape(top_destination)}</strong>
-    </div>
-    <div class="cc-trip-summary-card">
-        <span>Route distance</span>
-        <strong>{plan.optimized_route_distance_km:.1f} km</strong>
-    </div>
-    <div class="cc-trip-summary-card">
-        <span>Estimated cost</span>
-        <strong>${plan.budget['estimated_total_cost_usd']:.2f}</strong>
+        <span>Trip duration</span>
+        <strong>{plan.profile.trip_days} days</strong>
     </div>
     <div class="cc-trip-summary-card">
         <span>Weather availability</span>
         <strong>{weather_available}/{len(scheduled)} places</strong>
-    </div>
-    <div class="cc-trip-summary-card">
-        <span>Destinations</span>
-        <strong>{len(plan.optimized_route)}</strong>
     </div>
 </section>
 """
