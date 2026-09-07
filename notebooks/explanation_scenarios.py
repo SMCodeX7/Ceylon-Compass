@@ -68,7 +68,7 @@ SCENARIOS = [
 
 
 def main() -> None:
-    print("\nCEYLONCOMPASS EXPLANATION AUDIT")
+    print("\nCEYLON COMPASS EXPLANATION AUDIT")
     print("=" * 72)
 
     for scenario in SCENARIOS:

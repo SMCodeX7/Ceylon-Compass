@@ -68,7 +68,7 @@ def build_evaluation_report(
         )
 
     lines = [
-        "# CeylonCompass Quantitative Evaluation",
+        "# Ceylon Compass Quantitative Evaluation",
         "",
         "## Evaluation Scope",
         "",
@@ -194,7 +194,7 @@ def build_evaluation_report(
             ),
             (
                 "- **Final recommendation score** is the "
-                "weighted CeylonCompass ranking score, "
+                "weighted Ceylon Compass ranking score, "
                 "not a probability."
             ),
             (
@@ -408,7 +408,7 @@ def _write_compliance_chart(
 
     figure.update_layout(
         title=(
-            "CeylonCompass Evaluation "
+                "Ceylon Compass Evaluation "
             "Compliance Rates"
         ),
         xaxis_title="Metric",

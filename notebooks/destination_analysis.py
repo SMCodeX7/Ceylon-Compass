@@ -17,7 +17,7 @@ INTEREST_COLUMNS = [
 def main() -> None:
     df = pd.read_csv(DATA_PATH)
 
-    print("\nCEYLONCOMPASS DESTINATION DATASET ANALYSIS")
+    print("\nCEYLON COMPASS DESTINATION DATASET ANALYSIS")
     print("=" * 55)
 
     # Dataset overview

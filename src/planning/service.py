@@ -50,7 +50,7 @@ WeatherFetcher = Callable[
 @dataclass
 class TripPlan:
     """
-    Complete result produced by the CeylonCompass
+    Complete result produced by the Ceylon Compass
     planning pipeline.
     """
 
@@ -135,7 +135,7 @@ def _weather_forecast_days(
 ) -> int:
     """
     Limit weather requests to the Open-Meteo
-    forecast horizon used by CeylonCompass.
+    forecast horizon used by Ceylon Compass.
     """
 
     return min(
@@ -497,7 +497,7 @@ def generate_trip_plan(
     ),
 ) -> TripPlan:
     """
-    Run the integrated CeylonCompass planning
+    Run the integrated Ceylon Compass planning
     pipeline.
 
     Pipeline:

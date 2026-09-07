@@ -75,7 +75,7 @@ SCENARIOS = [
 
 
 def main() -> None:
-    print("\nCEYLONCOMPASS ROUTE OPTIMIZATION COMPARISON")
+    print("\nCEYLON COMPASS ROUTE OPTIMIZATION COMPARISON")
     print("=" * 78)
 
     for scenario in SCENARIOS:

@@ -1,81 +1,56 @@
-# 🇱🇰 CeylonCompass
+# 🇱🇰 Ceylon Compass
 
-### Smart Sri Lanka Travel Recommendation & Route Optimization Platform
+### Explainable Sri Lankan travel planning with recommendations, optimization and weather
 
 ### 🌐 Live Demo
 
-**Try CeylonCompass:**  
+**Try Ceylon Compass:**
 [https://sm-ceylon-compass.streamlit.app/](https://sm-ceylon-compass.streamlit.app/)
 
-CeylonCompass is a data-driven travel planning application that recommends Sri Lankan destinations based on traveller preferences, budget, crowd preference, weather conditions and geographic efficiency.
+Ceylon Compass is an explainable AI-style travel recommendation system and itinerary planner for Sri Lanka. Its recommendation layer is deterministic and score-based rather than generative: a traveller provides a Starting Location, trip duration, Trip Budget, travel style, crowd preference, transport mode and interests, and the application produces one connected plan:
 
-It then optimizes the travel sequence, creates a day-by-day itinerary, estimates the trip budget and visualizes the journey on an interactive map.
+1. ranked destination recommendations;
+2. an optimized visiting sequence;
+3. a day-by-day itinerary with forecast information; and
+4. an estimated activity and transport budget.
 
-The project combines **recommendation systems, geospatial analysis, route optimization, explainable scoring, weather intelligence and data visualization** in one end-to-end data science application.
+The product is built around four practical questions:
 
----
+| Traveller question | Ceylon Compass answer |
+|---|---|
+| **Where should I visit?** | Multi-criteria destination recommendations. |
+| **In what order should I visit?** | OR-Tools route sequencing using geographic distances. |
+| **Why was this recommended?** | Component scores, reasons, trade-offs and active weights. |
+| **How much will it cost and what is the itinerary?** | Daily scheduling, weather details and transparent budget estimates. |
 
-# 📸 Application Preview
-
-## Traveller Profile
-
-Travellers can configure:
-
-- Starting location
-- Number of travel days
-- Total budget
-- Travel style
-- Crowd preference
-- Transport method
-- Travel interests
-
-![Traveller Profile](assets/screenshots/01-traveller_profile.png)
+This is a deterministic, data-driven planning application. It does not use a generative AI model, claim turn-by-turn navigation, or present estimated costs as live market prices.
 
 ---
 
-## Destination Recommendations
+## At a Glance
 
-CeylonCompass ranks destinations using traveller preferences, budget compatibility, weather, crowd preference and geographic efficiency.
-
-![Destination Recommendations](assets/screenshots/02-recommendations.png)
-
-The system also explains **why destinations were recommended** and highlights important trade-offs.
-
-![Explainable Recommendations](assets/screenshots/03-explainability.png)
-
----
-
-## Route Optimization
-
-Recommended destinations are passed to the route optimization engine to determine an efficient visiting sequence.
-
-![Route Optimization](assets/screenshots/04-route_map.png)
+| Area | Implementation |
+|---|---|
+| **Technology stack** | Python, Streamlit, pandas, NumPy, scikit-learn, Folium and pytest |
+| **AI capabilities** | Deterministic explainable scoring using feature vectors, cosine similarity, component scores and recommendation reasons |
+| **Optimization** | Google OR-Tools route sequencing with Haversine geographic distances |
+| **Weather intelligence** | Open-Meteo forecast retrieval and weather suitability scoring |
+| **Budget planning** | Transparent activity and transport cost estimates with budget comparison |
+| **Live demo** | [Open the Streamlit application](https://sm-ceylon-compass.streamlit.app/) |
 
 ---
 
-## Interactive Trip Map
+## Application Workflow
 
-The optimized route is displayed using Folium and OpenStreetMap with numbered destination markers.
+The Streamlit interface presents the workflow as one journey rather than separate demos:
 
-![Interactive Trip Map](assets/screenshots/05-trip_map.png)
+1. **Traveller profile:** configure the constraints and preferences that drive the plan.
+2. **Recommendations:** inspect the ranked destinations and expand a card to see its reasoning.
+3. **Route experience:** review the recommended visit order, geographic distance summary and interactive map.
+4. **Itinerary and weather:** see which destinations fit each day and the forecast assigned to each scheduled stop.
+5. **Budget:** review estimated destination and transport costs, budget usage and modelling assumptions.
 
-> The displayed route connects geographic coordinates in optimized order. It is not turn-by-turn road navigation.
-
----
-
-## Day-by-Day Itinerary & Weather
-
-The optimized route is converted into a daily itinerary and combined with weather information.
-
-![Itinerary and Weather](assets/screenshots/06-itinerary_weather.png)
-
----
-
-## Budget Summary
-
-The application estimates destination and transport costs and checks whether the generated trip remains within the traveller's budget.
-
-![Budget Summary](assets/screenshots/07-budget_summary.png)
+The generated page is designed to make the relationship between each stage visible: recommendations decide **where** to go, the optimizer decides **in what order**, and the itinerary and budget explain what the resulting trip looks like.
 
 ---
 
@@ -92,7 +67,7 @@ Planning a multi-destination trip across Sri Lanka involves several decisions:
 - Can they fit within the available number of travel days?
 - What will the estimated trip cost be?
 
-CeylonCompass is designed around the following question:
+Ceylon Compass is designed around the following question:
 
 > **Given a traveller's budget, number of days, interests, travel style, crowd preference, transport preference and starting location, which Sri Lankan destinations should they visit, in what order, and why?**
 
@@ -100,13 +75,13 @@ CeylonCompass is designed around the following question:
 
 # ✨ Main Features
 
-## 1. Traveller Preference Profile
+## 1. Traveller Profile: Define the Trip
 
-The traveller profile includes:
+The input panel captures the constraints used by the planning pipeline:
 
-- Starting point
+- Starting Location
 - Trip duration
-- Total budget
+- Trip Budget
 - Travel style
 - Crowd preference
 - Transport preference
@@ -124,11 +99,9 @@ Supported interests:
 
 ---
 
-## 2. Destination Recommendation Engine
+## 2. Destination Recommendations: Where Should I Visit?
 
-Traveller interests and destination characteristics are represented as feature vectors.
-
-CeylonCompass uses **cosine similarity** to measure how closely each destination matches the traveller's selected interests.
+Traveller interests and destination characteristics are represented as feature vectors. Cosine similarity produces the preference component of the ranking.
 
 ```text
 Traveller Interests
@@ -142,9 +115,9 @@ Destination Preference Score
 
 ---
 
-## 3. Multi-Criteria Final Ranking
+## 3. Explainable Ranking: Why Was This Recommended?
 
-The final recommendation score combines five components:
+The final score combines five components:
 
 | Component | Weight |
 |---|---:|
@@ -165,17 +138,13 @@ Final Score =
 + 0.10 × Route Efficiency
 ```
 
-If weather information is unavailable, that component is excluded and the remaining active weights are normalized.
+If Weather Information is unavailable, that component is excluded and the remaining active weights are normalized.
 
 If the traveller selects **No Preference** for crowds, the crowd component is also excluded instead of giving all destinations an artificial perfect crowd score.
 
 ---
 
-## 4. Explainable Recommendations
-
-CeylonCompass does not only display a ranking.
-
-For top recommendations, the system shows:
+For the top recommendations, the current UI shows:
 
 - Matching traveller interests
 - Budget suitability
@@ -186,11 +155,11 @@ For top recommendations, the system shows:
 - Possible trade-offs
 - Active score weights
 
-This makes the recommendation process easier to understand and inspect.
+This makes each recommendation inspectable instead of presenting an unexplained rank.
 
 ---
 
-## 5. Geographic Route Efficiency
+## 4. Geographic Route Efficiency
 
 Geographic efficiency is considered during destination ranking.
 
@@ -205,7 +174,7 @@ This helps reduce the chance of selecting destinations that are individually rel
 
 ---
 
-## 6. OR-Tools Route Optimization
+## 5. Route Optimization: In What Order Should I Visit?
 
 After destination selection, **Google OR-Tools** determines an optimized visiting sequence.
 
@@ -225,7 +194,7 @@ The project also includes a nearest-neighbour route baseline for quantitative co
 
 ---
 
-## 7. Day-by-Day Itinerary
+## 6. Day-by-Day Itinerary: What Fits Each Day?
 
 The optimized route is converted into a daily itinerary.
 
@@ -235,7 +204,7 @@ The itinerary planner:
 - Assigns destinations to trip days
 - Uses an 8-hour daily activity limit
 - Identifies destinations that cannot fit into the available days
-- Adds day-specific weather information
+- Adds day-specific Weather Information
 
 Current V1 scheduling limits **activity time only**.
 
@@ -243,7 +212,7 @@ Travel time between destinations is not yet included in the daily time constrain
 
 ---
 
-## 8. Budget Estimation
+## 7. Budget-Aware Planning: How Much Will It Cost?
 
 The budget engine estimates:
 
@@ -274,9 +243,9 @@ The current cost values are transparent modelling assumptions used by the V1 sys
 
 ---
 
-## 9. Weather Intelligence
+## 8. Weather Intelligence: What Conditions Should I Expect?
 
-CeylonCompass uses the **Open-Meteo API** for live weather information.
+Ceylon Compass uses the **Open-Meteo API** for Weather Information.
 
 Weather suitability considers:
 
@@ -293,9 +262,9 @@ Weather forecasts are cached temporarily to reduce unnecessary API calls.
 
 ---
 
-## 10. Interactive Travel Map
+## 9. Interactive Travel Map
 
-CeylonCompass uses:
+Ceylon Compass uses:
 
 - Folium
 - OpenStreetMap
@@ -387,7 +356,7 @@ Final Trip Plan
 
 # 📊 Dataset
 
-CeylonCompass currently contains **48 curated Sri Lankan destinations**.
+Ceylon Compass currently contains **48 curated Sri Lankan destinations**.
 
 Each destination includes fields such as:
 
@@ -428,7 +397,9 @@ Some recommendation-related features such as interest strengths and crowd levels
 
 ---
 
-# 🧠 Data Science Concepts Used
+# 🧠 Technical Highlights
+
+Ceylon Compass combines several focused components rather than hiding the planning process behind a single opaque score:
 
 ## Recommendation Systems
 
@@ -452,12 +423,13 @@ Some recommendation-related features such as interest strengths and crowd levels
 - Route sequencing
 - Nearest-neighbour baseline
 
-## Explainable AI
+## Explainable AI-Style Scoring
 
 - Component-level scoring
 - Recommendation reasons
 - Trade-off explanations
 - Transparent ranking weights
+- Deterministic outputs that can be inspected and tested
 
 ## Weather Analytics
 
@@ -467,7 +439,7 @@ Some recommendation-related features such as interest strengths and crowd levels
 - Precipitation analysis
 - Temperature suitability
 
-## Evaluation
+## Evaluation and Reproducibility
 
 - Reproducible traveller scenarios
 - Deterministic weather benchmarking
@@ -482,7 +454,7 @@ Some recommendation-related features such as interest strengths and crowd levels
 
 # 📈 Quantitative Evaluation
 
-CeylonCompass V1 was evaluated using **30 fixed traveller scenarios** covering different:
+Ceylon Compass V1 was evaluated using **30 fixed traveller scenarios** covering different:
 
 - Starting locations
 - Budgets
@@ -648,17 +620,6 @@ Ceylon-Compass/
 ├── requirements.txt
 ├── LICENSE
 │
-├── assets/
-│   ├── architecture/
-│   └── screenshots/
-│       ├── 01-traveller_profile.png
-│       ├── 02-recommendations.png
-│       ├── 03-explainability.png
-│       ├── 04-route_map.png
-│       ├── 05-trip_map.png
-│       ├── 06-itinerary_weather.png
-│       └── 07-budget_summary.png
-│
 ├── data/
 │   ├── destinations.csv
 │   └── README.md
@@ -738,7 +699,7 @@ The application will open in the browser.
 
 # 🌐 Deployment
 
-CeylonCompass V1 is publicly deployed using **Streamlit Community Cloud**.
+Ceylon Compass V1 is publicly deployed using **Streamlit Community Cloud**.
 
 ### Live Application
 
@@ -760,7 +721,7 @@ The deployed application does not require paid API keys.
 
 # 💰 Cost-Free Architecture
 
-CeylonCompass V1 is intentionally designed to work without paid APIs.
+Ceylon Compass V1 is intentionally designed to work without paid APIs.
 
 It currently uses:
 
@@ -779,7 +740,7 @@ No paid OpenAI, Gemini, Claude or Mistral API is required for the current V1 app
 
 # ⚠️ Current Limitations
 
-CeylonCompass V1 currently has several known limitations:
+Ceylon Compass V1 currently has several known limitations:
 
 1. The dataset contains 48 destinations.
 2. Recommendation feature values are manually curated.
@@ -927,7 +888,7 @@ NLP Profile Extraction
 
         ↓
 
-CeylonCompass Recommendation Engine
+Ceylon Compass Recommendation Engine
 
         ↓
 
@@ -958,7 +919,7 @@ The current deterministic recommendation and optimization pipeline will remain t
 
 # 🧭 Design Principle
 
-CeylonCompass separates recommendation from optimization:
+Ceylon Compass separates recommendation from optimization:
 
 > **The recommender decides WHERE to travel.**
 
@@ -990,7 +951,7 @@ See the [LICENSE](LICENSE) file for licensing information.
 
 ---
 
-# 🇱🇰 CeylonCompass
+# 🇱🇰 Ceylon Compass
 
 **Data-driven Sri Lanka travel planning with explainable recommendations, route optimization, weather intelligence and reproducible evaluation.**
 

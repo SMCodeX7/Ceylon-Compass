@@ -1,6 +1,6 @@
-# CeylonCompass Destination Dataset
+# Ceylon Compass Destination Dataset
 
-This dataset contains structured destination features used by the CeylonCompass recommendation and itinerary-planning system.
+This dataset contains structured destination features used by the Ceylon Compass recommendation and itinerary-planning system.
 
 ## Geographic Features
 
@@ -49,7 +49,7 @@ Scoring:
 
 Geographic and descriptive fields should be based on verifiable sources.
 
-Subjective recommendation features such as nature relevance, adventure relevance, crowd level, and family suitability are curated features created specifically for CeylonCompass.
+Subjective recommendation features such as nature relevance, adventure relevance, crowd level, and family suitability are curated features created specifically for Ceylon Compass.
 
 These values are not treated as objective ground truth. They are used as model inputs and will later be tested through recommendation-system evaluation.
 
@@ -68,7 +68,7 @@ These are checked against geographic and tourism references:
 - longitude
 - destination type/category
 
-### CeylonCompass Curated Features
+### Ceylon Compass Curated Features
 
 The following are initial modelling assumptions created for the recommendation system:
 

@@ -905,6 +905,65 @@ h2 {
 
 /* Budget presentation */
 
+/* Trip result summary */
+
+.cc-trip-summary {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.65rem;
+    margin: 0 0 1.25rem;
+}
+
+.cc-trip-summary-card {
+    min-width: 0;
+    padding: 0.85rem 0.95rem;
+    border: 1px solid var(--cc-border);
+    border-radius: 0.85rem;
+    background: var(--cc-white);
+    box-shadow: 0 6px 16px rgba(25, 83, 84, 0.05);
+}
+
+.cc-trip-summary-card span {
+    display: block;
+    overflow: hidden;
+    color: var(--cc-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cc-trip-summary-card strong {
+    display: block;
+    overflow: hidden;
+    margin-top: 0.25rem;
+    color: var(--cc-ink);
+    font-size: 1.05rem;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cc-trip-summary-card:first-child {
+    border-left: 3px solid var(--cc-ocean);
+}
+
+.cc-trip-summary-card:nth-child(4) {
+    border-left: 3px solid var(--cc-green);
+}
+
+@media (max-width: 900px) {
+    .cc-trip-summary {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 520px) {
+    .cc-trip-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
 .cc-budget-container {
     min-width: 0;
 }
@@ -1448,7 +1507,7 @@ def render_sidebar_brand() -> None:
 <div class="cc-sidebar-note">
     <strong>Free and explainable planning</strong>
     <br>
-    Live weather • Smart ranking • Optimized routes
+    Weather Information • Smart ranking • Optimized routes
 </div>
 """
 
@@ -1474,7 +1533,7 @@ def render_hero() -> None:
 
             <p>
                 Create personalized travel plans using destination recommendations,
-                route optimization, weather information, and budget-aware planning.
+                route optimization, Weather Information, and budget-aware planning.
             </p>
         </section>
 
@@ -1597,7 +1656,7 @@ Trip duration
 
 <div class="cc-profile-stat">
 <div class="cc-profile-stat-label">
-Total budget
+Trip Budget
 </div>
 <div class="cc-profile-stat-value">
 ${safe_budget:,.0f}
@@ -1632,7 +1691,7 @@ Journey preferences
 <div class="cc-profile-detail-content">
 
 <div class="cc-profile-detail-label">
-Starting point
+Starting Location
 </div>
 
 <div class="cc-profile-detail-value">
@@ -1649,7 +1708,7 @@ Starting point
 <div class="cc-profile-detail-content">
 
 <div class="cc-profile-detail-label">
-Travel style
+Travel Style
 </div>
 
 <div class="cc-profile-detail-value">
@@ -1683,7 +1742,7 @@ Crowd preference
 <div class="cc-profile-detail-content">
 
 <div class="cc-profile-detail-label">
-Preferred transport
+Transport Preference
 </div>
 
 <div class="cc-profile-detail-value">

@@ -242,7 +242,7 @@ def rank_destinations(
     """
     Rank destinations using the recommendation
     components currently implemented by
-    CeylonCompass.
+    Ceylon Compass.
 
     Geographic and itinerary-related fields are
     retained so ranked destinations can be passed

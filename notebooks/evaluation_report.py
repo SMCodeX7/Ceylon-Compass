@@ -14,7 +14,7 @@ from src.evaluation.runner import (
 
 def main() -> None:
     """
-    Run the complete reproducible CeylonCompass
+    Run the complete reproducible Ceylon Compass
     quantitative evaluation.
     """
 
@@ -23,7 +23,7 @@ def main() -> None:
     )
 
     print(
-        "CEYLONCOMPASS QUANTITATIVE EVALUATION"
+        "CEYLON COMPASS QUANTITATIVE EVALUATION"
     )
 
     print(

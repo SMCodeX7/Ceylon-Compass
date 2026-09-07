@@ -47,7 +47,7 @@ WEATHER_CACHE_TTL_SECONDS = 1800
 
 
 st.set_page_config(
-    page_title="CeylonCompass",
+    page_title="Ceylon Compass",
     page_icon="🇱🇰",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -84,10 +84,10 @@ def display_scoring_methodology() -> None:
     """Explain the final weighted recommendation model."""
 
     with st.expander(
-        "How the final recommendation score works"
+        "How the Recommendation Score works"
     ):
         st.markdown(
-            "### Final CeylonCompass Ranking Model"
+            "### Final Ceylon Compass Ranking Model"
         )
 
         st.write(
@@ -116,7 +116,7 @@ def display_scoring_methodology() -> None:
         )
 
         st.info(
-            "If live weather is unavailable for a "
+            "If Weather Information is unavailable for a "
             "destination, the weather component is "
             "excluded and the remaining active weights "
             "are normalized."
@@ -132,7 +132,7 @@ def display_scoring_methodology() -> None:
         st.caption(
             "Route efficiency is currently a geographic "
             "candidate-selection proxy based on distance "
-            "from the starting point and relative "
+            "from the starting location and relative "
             "proximity to the candidate cluster. "
             "It is not road-routing distance."
         )
@@ -168,7 +168,7 @@ def render_recommendation_card(
     weather_label = (
         str(destination["ranking_weather_suitability"])
         if weather_available
-        else "Live weather unavailable"
+        else "Weather Information unavailable"
     )
     crowd_value = (
         f"{float(destination['crowd_score']):.1f}%"
@@ -225,7 +225,7 @@ def render_recommendation_card(
         </span>
         <span class="cc-recommendation-summary">
             <strong>{escape(str(destination['name']))}</strong>
-            <span>Recommendation score {final_score:.1f}%</span>
+            <span>Recommendation Score {final_score:.1f}%</span>
         </span>
     </summary>
 
@@ -240,13 +240,13 @@ def render_recommendation_card(
             </div>
             <div class="cc-recommendation-score">
                 <div class="cc-recommendation-score-heading">
-                    <span>Recommendation score</span>
+                    <span>Recommendation Score</span>
                     <strong>{final_score:.1f}%</strong>
                 </div>
                 <div
                     class="cc-recommendation-score-track"
                     role="progressbar"
-                    aria-label="Recommendation score"
+                    aria-label="Recommendation Score"
                     aria-valuemin="0"
                     aria-valuemax="100"
                     aria-valuenow="{final_score:.1f}"
@@ -326,7 +326,7 @@ def display_recommendations(
 
     st.caption(
         "Destinations are ranked using traveller "
-        "preferences, budget compatibility, live weather, "
+        "preferences, budget compatibility, Weather Information, "
         "crowd preference when selected, and geographic "
         "route-efficiency information."
     )
@@ -336,6 +336,18 @@ def display_recommendations(
     st.subheader(
         "Recommendation Details"
     )
+
+    st.caption(
+        "Each recommendation includes its rationale, the scoring factors "
+        "that shaped its Recommendation Score, and relevant trade-offs."
+    )
+
+    if recommendations.empty:
+        st.info(
+            "No destinations matched the current travel settings. "
+            "Try adjusting your interests, budget, or travel style."
+        )
+        return
 
     for _, destination in recommendations.head(5).iterrows():
         explanation = explain_destination(
@@ -364,7 +376,7 @@ def display_interactive_route_map(
 
     st.caption(
         "Use the map to see how your selected destinations "
-        "connect from the starting point and follow the "
+        "connect from the starting location and follow the "
         "recommended visit sequence."
     )
 
@@ -395,7 +407,7 @@ def display_interactive_route_map(
         st.write(
             "**Route efficiency** is a geographic planning "
             "proxy used to select suitable route candidates. "
-            "It considers distance from the starting point and "
+            "It considers distance from the starting location and "
             "relative proximity within the destination cluster; "
             "it is not driving-road distance."
         )
@@ -490,6 +502,13 @@ def display_route(
         .tolist()
     )
 
+    if not route_names:
+        st.info(
+            "No route destinations are available for these travel settings. "
+            "Try adjusting your trip preferences and generate the journey again."
+        )
+        return
+
     if (
         route_names
         and route_names[
@@ -527,6 +546,13 @@ def display_route(
             "efficient geographic sequence."
         )
 
+        st.caption(
+            "Technical note: route optimization selects an efficient visit "
+            "order using geographic distance calculations based on Haversine "
+            "great-circle distance between coordinates. It is not turn-by-turn "
+            "navigation."
+        )
+
         explanation_col1, explanation_col2 = (
             st.columns(2)
         )
@@ -549,13 +575,13 @@ def display_route(
             "**Geographic efficiency**\n\n"
             "Route efficiency uses the existing geographic "
             "distance information to favor destinations that are "
-            "closer to the starting point and destination cluster."
+            "closer to the starting location and destination cluster."
         )
 
         explanation_col2.markdown(
             "**Preference-aware route planning**\n\n"
             "The route is built from destinations already ranked by "
-            "the final recommendation score, preserving the current "
+            "the Recommendation Score, preserving the current "
             "traveller preference, budget, weather, crowd, and route "
             "efficiency signals."
         )
@@ -588,7 +614,7 @@ def display_route(
                             <h3>{escape(str(destination['name']))}</h3>
                         </div>
                         <div class="cc-route-score">
-                            <span>Recommendation score</span>
+                            <span>Recommendation Score</span>
                             <strong>{float(destination['final_score']):.1f}%</strong>
                         </div>
                     </div>
@@ -677,8 +703,8 @@ def display_itinerary(
 
     if scheduled.empty:
         st.warning(
-            "No destinations could be scheduled "
-            "within the selected trip duration."
+            "No destinations fit within the selected trip duration. "
+            "Try adding more trip days or choosing a shorter set of activities."
         )
 
     else:
@@ -823,7 +849,7 @@ def display_itinerary(
                     )
                 else:
                     itinerary_html.append(
-                        '<p>Live weather is unavailable '
+                        '<p>Weather Information is unavailable '
                         'for this itinerary stop.</p>'
                     )
 
@@ -880,7 +906,7 @@ def display_itinerary(
                 )
 
                 score_col.metric(
-                    "Recommendation score",
+                    "Recommendation Score",
                     f"{float(destination['final_score']):.1f}%",
                 )
 
@@ -902,7 +928,7 @@ def display_weather_intelligence(
     st.divider()
 
     st.header(
-        "Live Weather Intelligence"
+        "Weather Information"
     )
 
     st.caption(
@@ -930,9 +956,8 @@ def display_weather_intelligence(
 
     if available.empty:
         st.warning(
-            "Live weather could not be retrieved for "
-            "the scheduled destinations. Other planning "
-            "components remain available."
+            "Weather Information is unavailable for the scheduled destinations. "
+            "Your recommendations and itinerary are still available without weather details."
         )
 
         return
@@ -1037,7 +1062,7 @@ def display_weather_intelligence(
 
     st.dataframe(
         weather_display,
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
 
@@ -1048,7 +1073,7 @@ def display_weather_intelligence(
     )
 
     st.caption(
-        "CeylonCompass currently assumes the trip "
+        "Ceylon Compass currently assumes the trip "
         "starts within the current forecast horizon. "
         "A user-selected future travel start date is "
         "not yet implemented."
@@ -1069,8 +1094,14 @@ def display_budget_breakdown(
     st.divider()
 
     st.header(
-        "Estimated Trip Budget"
+        "Trip Budget"
     )
+
+    if not plan.itinerary["scheduled"].any():
+        st.info(
+            "No destinations are scheduled, so this Trip Budget estimate currently "
+            "contains no activity or transport costs."
+        )
 
     daily_average_cost = (
         budget[
@@ -1198,7 +1229,7 @@ def display_budget_breakdown(
     )
 
     with st.expander(
-        "How this budget estimate is calculated"
+        "How this Trip Budget estimate is calculated"
     ):
         st.write(
             f"**Travel Style:** "
@@ -1245,10 +1276,60 @@ def display_budget_breakdown(
         )
 
 
+def display_trip_summary(
+    plan: TripPlan,
+) -> None:
+    """Display a compact overview of the generated trip."""
+
+    top_destination = "Unavailable"
+    if not plan.recommendations.empty:
+        top_destination = str(
+            plan.recommendations.iloc[0]["name"]
+        )
+
+    scheduled = plan.itinerary[
+        plan.itinerary["scheduled"]
+    ]
+    weather_available = int(
+        scheduled["weather_available"].sum()
+    )
+
+    summary_html = f"""
+<section class="cc-trip-summary" aria-label="Trip summary">
+    <div class="cc-trip-summary-card">
+        <span>Top recommendation</span>
+        <strong>{escape(top_destination)}</strong>
+    </div>
+    <div class="cc-trip-summary-card">
+        <span>Route distance</span>
+        <strong>{plan.optimized_route_distance_km:.1f} km</strong>
+    </div>
+    <div class="cc-trip-summary-card">
+        <span>Estimated cost</span>
+        <strong>${plan.budget['estimated_total_cost_usd']:.2f}</strong>
+    </div>
+    <div class="cc-trip-summary-card">
+        <span>Weather availability</span>
+        <strong>{weather_available}/{len(scheduled)} places</strong>
+    </div>
+    <div class="cc-trip-summary-card">
+        <span>Destinations</span>
+        <strong>{len(plan.optimized_route)}</strong>
+    </div>
+</section>
+"""
+
+    st.html(summary_html.replace("    ", ""))
+
+
 def display_trip_plan(
     plan: TripPlan,
 ) -> None:
     """Render all outputs from one unified TripPlan."""
+
+    display_trip_summary(
+        plan
+    )
 
     display_recommendations(
         plan
@@ -1277,11 +1358,11 @@ def main() -> None:
     render_hero()
 
     render_section_intro(
-        title="Design your Sri Lankan escape",
+        title="Plan your Sri Lankan trip with clear reasons",
         description=(
-            "Tell us how you like to travel. "
-            "Ceylon Compass will shape the recommendations "
-            "around your choices."
+            "Get explainable destination recommendations, an optimized "
+            "visit order, weather-aware planning, and a budget-aware "
+            "itinerary from one traveller profile."
         ),
         icon="🧳",
     )
@@ -1294,7 +1375,7 @@ def main() -> None:
 
         with col1:
             starting_point = st.selectbox(
-                "Starting Point",
+                "Starting Location",
                 [
                     "Colombo",
                     "Kandy",
@@ -1317,13 +1398,13 @@ def main() -> None:
             )
 
             budget = st.number_input(
-                "Total Budget (USD)",
+                "Trip Budget (USD)",
                 min_value=50,
                 max_value=5000,
                 value=500,
                 step=50,
                 help=(
-                    "Enter the estimated total budget "
+                    "Enter the Trip Budget "
                     "for your trip."
                 ),
             )
@@ -1356,7 +1437,7 @@ def main() -> None:
             )
 
             transport = st.selectbox(
-                "Preferred Transport",
+                "Transport Preference",
                 [
                     "Public Transport",
                     "Mixed Transport",
@@ -1397,7 +1478,7 @@ def main() -> None:
     generate_trip = st.button(
         "✨ Create My Smart Journey",
         type="primary",
-        use_container_width=True,
+        width="stretch",
     )
 
     if generate_trip:
@@ -1460,7 +1541,17 @@ def main() -> None:
             ValueError,
             RuntimeError,
         ) as error:
-            st.error(str(error))
+            st.error(
+                "Unable to generate your journey with the current travel settings. "
+                "Try adjusting your preferences and generating the journey again."
+            )
+
+            with st.expander(
+                "Technical details"
+            ):
+                st.code(
+                    f"{type(error).__name__}: {error}"
+                )
 
     render_footer()
 

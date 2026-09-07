@@ -67,7 +67,7 @@ SCENARIOS = [
 
 
 def main() -> None:
-    print("\nCEYLONCOMPASS MULTI-PROFILE CHECK")
+    print("\nCEYLON COMPASS MULTI-PROFILE CHECK")
     print("=" * 70)
 
     for scenario in SCENARIOS:

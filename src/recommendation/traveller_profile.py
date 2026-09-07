@@ -34,7 +34,7 @@ TRANSPORT_OPTIONS = {
 
 @dataclass(frozen=True)
 class TravellerProfile:
-    """Structured representation of a CeylonCompass traveller."""
+    """Structured representation of a Ceylon Compass traveller."""
 
     starting_point: str
     trip_days: int

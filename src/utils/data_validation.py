@@ -40,7 +40,7 @@ INTEREST_COLUMNS = [
 
 
 def validate_dataset(path: Path = DATA_PATH) -> pd.DataFrame:
-    """Validate the CeylonCompass destination dataset."""
+    """Validate the Ceylon Compass destination dataset."""
 
     if not path.exists():
         raise FileNotFoundError(f"Dataset not found: {path}")
@@ -169,7 +169,7 @@ def validate_dataset(path: Path = DATA_PATH) -> pd.DataFrame:
         )
 
         raise ValueError(
-            f"CeylonCompass dataset validation failed:\n"
+            f"Ceylon Compass dataset validation failed:\n"
             f"{error_message}"
         )
 
@@ -179,7 +179,7 @@ def validate_dataset(path: Path = DATA_PATH) -> pd.DataFrame:
 def print_dataset_summary(df: pd.DataFrame) -> None:
     """Print a concise dataset quality summary."""
 
-    print("CeylonCompass Destination Dataset")
+    print("Ceylon Compass Destination Dataset")
     print("-" * 40)
     print(f"Destinations : {len(df)}")
     print(f"Features     : {len(df.columns)}")

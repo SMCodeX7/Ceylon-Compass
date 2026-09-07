@@ -11,7 +11,7 @@ from src.recommendation.traveller_profile import (
 class EvaluationScenario:
     """
     One reproducible traveller scenario used for
-    quantitative CeylonCompass evaluation.
+    quantitative Ceylon Compass evaluation.
 
     segment is used only for grouping evaluation
     results. Recommendation behaviour is determined

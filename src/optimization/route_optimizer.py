@@ -23,7 +23,7 @@ def build_optimizer_distance_matrix(
         1..N = recommended destinations
         final node = dummy end node
 
-    The dummy end node allows CeylonCompass to optimize
+    The dummy end node allows Ceylon Compass to optimize
     an open route without forcing the traveller to return
     to the original starting point.
     """

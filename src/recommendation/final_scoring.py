@@ -468,7 +468,7 @@ def calculate_final_scores(
     profile: TravellerProfile,
 ) -> pd.DataFrame:
     """
-    Calculate the final CeylonCompass destination
+    Calculate the final Ceylon Compass destination
     recommendation score.
 
     Standard weights:
@@ -653,7 +653,7 @@ def rank_final_destinations(
 ) -> pd.DataFrame:
     """
     Rank candidate destinations using the final
-    weighted CeylonCompass scoring model.
+    weighted Ceylon Compass scoring model.
     """
 
     if (

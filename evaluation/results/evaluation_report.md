@@ -1,4 +1,4 @@
-# CeylonCompass Quantitative Evaluation
+# Ceylon Compass Quantitative Evaluation
 
 ## Evaluation Scope
 
@@ -41,7 +41,7 @@ Preference score is an internal cosine-similarity indicator derived from the cur
 ## Interpretation Rules
 
 - **Preference similarity** measures alignment between a traveller interest vector and curated destination feature vectors.
-- **Final recommendation score** is the weighted CeylonCompass ranking score, not a probability.
+- **Final recommendation score** is the weighted Ceylon Compass ranking score, not a probability.
 - **Budget compliance** is based on the current V1 cost model and its explicit cost assumptions.
 - **Duration compliance** checks the current 8-hour daily activity limit. Travel time is not included in that daily limit.
 - **Route distance** uses Haversine great-circle distance. It is not actual road-driving distance.
