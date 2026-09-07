@@ -1,3 +1,5 @@
+from html import escape
+
 import streamlit as st
 from streamlit_folium import st_folium
 
@@ -136,6 +138,178 @@ def display_scoring_methodology() -> None:
         )
 
 
+def render_recommendation_card(
+    destination,
+    explanation,
+) -> None:
+    """Render one detailed destination recommendation card."""
+
+    rank = int(destination["final_recommendation_rank"])
+    final_score = float(destination["final_score"])
+    score_progress = min(max(final_score, 0.0), 100.0)
+    weather_available = bool(destination["weather_component_active"])
+    crowd_available = bool(destination["crowd_component_active"])
+
+    reasons_html = "".join(
+        f"<li>{escape(str(reason))}</li>"
+        for reason in explanation["reasons"]
+    )
+
+    tradeoffs_html = "".join(
+        f"<li>{escape(str(tradeoff))}</li>"
+        for tradeoff in explanation["tradeoffs"]
+    )
+
+    weather_score = (
+        f"{float(destination['ranking_weather_score']):.1f}%"
+        if weather_available
+        else "Unavailable"
+    )
+    weather_label = (
+        str(destination["ranking_weather_suitability"])
+        if weather_available
+        else "Live weather unavailable"
+    )
+    crowd_value = (
+        f"{float(destination['crowd_score']):.1f}%"
+        if crowd_available
+        else "Not included"
+    )
+    crowd_label = (
+        "Crowd compatibility"
+        if crowd_available
+        else "No crowd preference selected"
+    )
+
+    supporting_factors_html = f"""
+<div class="cc-explanation-factors">
+    <div class="cc-explanation-factor">
+        <span>Matching interests</span>
+        <strong>{float(destination['preference_score']):.1f}%</strong>
+    </div>
+    <div class="cc-explanation-factor">
+        <span>Budget compatibility</span>
+        <strong>{float(destination['budget_score']):.1f}%</strong>
+    </div>
+    <div class="cc-explanation-factor">
+        <span>Weather suitability</span>
+        <strong>{weather_score}</strong>
+        <small>{escape(weather_label)}</small>
+    </div>
+    <div class="cc-explanation-factor">
+        <span>{crowd_label}</span>
+        <strong>{crowd_value}</strong>
+    </div>
+    <div class="cc-explanation-factor">
+        <span>Route efficiency</span>
+        <strong>{float(destination['route_efficiency_score']):.1f}%</strong>
+    </div>
+</div>
+"""
+
+    tradeoffs_section = ""
+    if tradeoffs_html:
+        tradeoffs_section = f"""
+<section class="cc-explanation-block cc-explanation-limitations">
+    <h4>Possible limitations and trade-offs</h4>
+    <ul>{tradeoffs_html}</ul>
+</section>
+"""
+
+    card_html = f"""
+<details class="cc-recommendation-card">
+    <summary>
+        <span class="cc-recommendation-rank">
+            <span>Ranking position</span>
+            <strong>{rank}</strong>
+        </span>
+        <span class="cc-recommendation-summary">
+            <strong>{escape(str(destination['name']))}</strong>
+            <span>Recommendation score {final_score:.1f}%</span>
+        </span>
+    </summary>
+
+    <div class="cc-recommendation-body">
+        <div class="cc-recommendation-heading">
+            <div>
+                <h3>{escape(str(destination['name']))}</h3>
+                <p>
+                    {escape(str(destination['district']))} District,
+                    {escape(str(destination['province']))} Province
+                </p>
+            </div>
+            <div class="cc-recommendation-score">
+                <div class="cc-recommendation-score-heading">
+                    <span>Recommendation score</span>
+                    <strong>{final_score:.1f}%</strong>
+                </div>
+                <div
+                    class="cc-recommendation-score-track"
+                    role="progressbar"
+                    aria-label="Recommendation score"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    aria-valuenow="{final_score:.1f}"
+                >
+                    <span style="width: {score_progress:.1f}%"></span>
+                </div>
+                <small>Score range: 0 to 100</small>
+            </div>
+        </div>
+
+        <div class="cc-recommendation-facts">
+            <div class="cc-recommendation-fact">
+                <span>Category</span>
+                <strong>{escape(str(destination['category']))}</strong>
+            </div>
+            <div class="cc-recommendation-fact">
+                <span>Estimated daily cost</span>
+                <strong>${float(destination['estimated_daily_cost_usd']):.0f}</strong>
+            </div>
+            <div class="cc-recommendation-fact">
+                <span>Visit duration</span>
+                <strong>{float(destination['recommended_duration_hours']):.0f} hours</strong>
+            </div>
+            <div class="cc-recommendation-fact">
+                <span>Distance from start</span>
+                <strong>{float(destination['distance_from_start_km']):.1f} km</strong>
+            </div>
+        </div>
+
+        <section class="cc-recommendation-explanation">
+            <div class="cc-explanation-block">
+                <h4>Recommendation reason</h4>
+                <p class="cc-explanation-lead">
+                    This destination matches the preferences and constraints
+                    in the current traveller profile.
+                </p>
+                <ul>{reasons_html}</ul>
+            </div>
+            <div class="cc-explanation-block">
+                <h4>Supporting factors</h4>
+                {supporting_factors_html}
+            </div>
+            {tradeoffs_section}
+        </section>
+
+        <details class="cc-recommendation-weights">
+            <summary>Active score weights</summary>
+            <div class="cc-recommendation-weight-grid">
+                <span>Preference <strong>{float(destination['preference_weight_used']) * 100:.0f}%</strong></span>
+                <span>Budget <strong>{float(destination['budget_weight_used']) * 100:.0f}%</strong></span>
+                <span>Weather <strong>{float(destination['weather_weight_used']) * 100:.0f}%</strong></span>
+                <span>Crowd <strong>{float(destination['crowd_weight_used']) * 100:.0f}%</strong></span>
+                <span>Route efficiency <strong>{float(destination['route_efficiency_weight_used']) * 100:.0f}%</strong></span>
+                <span>Active weight total <strong>{float(destination['active_weight_total']) * 100:.0f}%</strong></span>
+            </div>
+        </details>
+    </div>
+</details>
+"""
+
+    st.html(card_html.replace("    ", ""))
+
+
 def display_recommendations(
     plan: TripPlan,
 ) -> None:
@@ -197,203 +371,15 @@ def display_recommendations(
         "Recommendation Details"
     )
 
-    for _, destination in (
-        recommendations.head(5).iterrows()
-    ):
+    for _, destination in recommendations.head(5).iterrows():
         explanation = explain_destination(
             destination,
             plan.profile,
         )
-
-        rank = int(
-            destination[
-                "final_recommendation_rank"
-            ]
+        render_recommendation_card(
+            destination,
+            explanation,
         )
-
-        final_score = float(
-            destination[
-                "final_score"
-            ]
-        )
-
-        with st.expander(
-            f"#{rank} "
-            f"{destination['name']} "
-            f"— {final_score:.2f}%"
-        ):
-            col1, col2, col3, col4, col5 = (
-                st.columns(5)
-            )
-
-            col1.metric(
-                "Interest",
-                (
-                    f"{float(destination['preference_score']):.1f}%"
-                ),
-            )
-
-            col2.metric(
-                "Budget",
-                (
-                    f"{float(destination['budget_score']):.1f}%"
-                ),
-            )
-
-            if bool(
-                destination[
-                    "weather_component_active"
-                ]
-            ):
-                col3.metric(
-                    "Weather",
-                    (
-                        f"{float(destination['ranking_weather_score']):.1f}%"
-                    ),
-                )
-            else:
-                col3.metric(
-                    "Weather",
-                    "Unavailable",
-                )
-
-            col4.metric(
-                "Route Efficiency",
-                (
-                    f"{float(destination['route_efficiency_score']):.1f}%"
-                ),
-            )
-
-            col5.metric(
-                "Final Score",
-                f"{final_score:.1f}%",
-            )
-
-            st.divider()
-
-            if bool(
-                destination[
-                    "crowd_component_active"
-                ]
-            ):
-                st.write(
-                    f"**Crowd Compatibility:** "
-                    f"{float(destination['crowd_score']):.1f}%"
-                )
-            else:
-                st.write(
-                    "**Crowd Compatibility:** "
-                    "Excluded — no crowd preference selected"
-                )
-
-            st.write(
-                f"**Category:** "
-                f"{destination['category']}"
-            )
-
-            st.write(
-                f"**Location:** "
-                f"{destination['district']} District, "
-                f"{destination['province']} Province"
-            )
-
-            st.write(
-                f"**Estimated Daily Cost:** "
-                f"${float(destination['estimated_daily_cost_usd']):.0f}"
-            )
-
-            st.write(
-                f"**Recommended Visit Duration:** "
-                f"{float(destination['recommended_duration_hours']):.0f} "
-                f"hours"
-            )
-
-            st.write(
-                f"**Distance From Starting Point:** "
-                f"{float(destination['distance_from_start_km']):.1f} km"
-            )
-
-            if bool(
-                destination[
-                    "weather_component_active"
-                ]
-            ):
-                st.write(
-                    f"**Forecast Suitability:** "
-                    f"{destination['ranking_weather_suitability']}"
-                )
-            else:
-                st.write(
-                    "**Forecast Suitability:** "
-                    "Live weather unavailable"
-                )
-
-            st.divider()
-
-            st.markdown(
-                "### Why this destination matches you"
-            )
-
-            for reason in explanation[
-                "reasons"
-            ]:
-                st.write(
-                    f"- {reason}"
-                )
-
-            if explanation[
-                "tradeoffs"
-            ]:
-                st.markdown(
-                    "### Trade-offs to consider"
-                )
-
-                for tradeoff in explanation[
-                    "tradeoffs"
-                ]:
-                    st.write(
-                        f"- {tradeoff}"
-                    )
-
-            st.divider()
-
-            st.markdown(
-                "### Active Score Weights"
-            )
-
-            weight_col1, weight_col2, weight_col3 = (
-                st.columns(3)
-            )
-
-            weight_col1.write(
-                f"Preference: "
-                f"{float(destination['preference_weight_used']) * 100:.0f}%"
-            )
-
-            weight_col1.write(
-                f"Budget: "
-                f"{float(destination['budget_weight_used']) * 100:.0f}%"
-            )
-
-            weight_col2.write(
-                f"Weather: "
-                f"{float(destination['weather_weight_used']) * 100:.0f}%"
-            )
-
-            weight_col2.write(
-                f"Crowd: "
-                f"{float(destination['crowd_weight_used']) * 100:.0f}%"
-            )
-
-            weight_col3.write(
-                f"Route Efficiency: "
-                f"{float(destination['route_efficiency_weight_used']) * 100:.0f}%"
-            )
-
-            weight_col3.write(
-                f"Active Weight Total: "
-                f"{float(destination['active_weight_total']) * 100:.0f}%"
-            )
 
 
 def display_interactive_route_map(

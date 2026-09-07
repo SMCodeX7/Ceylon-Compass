@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_5d8a17b6ebcc9b907b59d814e3fb2b95 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_5d8a17b6ebcc9b907b59d814e3fb2b95" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_5d8a17b6ebcc9b907b59d814e3fb2b95 = L.map(
+                "map_5d8a17b6ebcc9b907b59d814e3fb2b95",
+                {
+                    center: [7.8731, 80.7718],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 7,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+            L.control.scale().addTo(map_5d8a17b6ebcc9b907b59d814e3fb2b95);
+
+            
+
+        
+    
+            var tile_layer_cd0fba4297e5abf4de95924b3f2a5e26 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_cd0fba4297e5abf4de95924b3f2a5e26.addTo(map_5d8a17b6ebcc9b907b59d814e3fb2b95);
+        
+    
+            var marker_9f9b32a8f706a62246d9196b12482bfa = L.marker(
+                [6.9271, 79.8612],
+                {
+}
+            ).addTo(map_5d8a17b6ebcc9b907b59d814e3fb2b95);
+        
+    
+            var icon_0a810cb022fbfd1136073e4e82fc2d2b = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "home",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_1324004e060997d5d14748c9c6f822ef = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_609091370e2667a56045782bfaecfe9a = $(`<div id="html_609091370e2667a56045782bfaecfe9a" style="width: 100.0%; height: 100.0%;"><b>Starting Point</b><br>Colombo</div>`)[0];
+                popup_1324004e060997d5d14748c9c6f822ef.setContent(html_609091370e2667a56045782bfaecfe9a);
+            
+        
+
+        marker_9f9b32a8f706a62246d9196b12482bfa.bindPopup(popup_1324004e060997d5d14748c9c6f822ef)
+        ;
+
+        
+    
+    
+            marker_9f9b32a8f706a62246d9196b12482bfa.bindTooltip(
+                `<div>
+                     Starting Point: Colombo
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_9f9b32a8f706a62246d9196b12482bfa.setIcon(icon_0a810cb022fbfd1136073e4e82fc2d2b);
+            
+    
+            var marker_34b0a72107103c1416bd4cbb76cea99a = L.marker(
+                [6.7734, 80.8313],
+                {
+}
+            ).addTo(map_5d8a17b6ebcc9b907b59d814e3fb2b95);
+        
+    
+            var icon_e8536cd1e0e6d07f38d2f8d42ead75be = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "map-marker",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_b67b2a5c5589130cca69c2bb3f53e75e = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_cbe1c10f63605f7b2a4437f7b99f407c = $(`<div id="html_cbe1c10f63605f7b2a4437f7b99f407c" style="width: 100.0%; height: 100.0%;"><b>Bambarakanda Falls</b><br>Category: Nature<br>District: Badulla<br>Recommendation Score: 94.1%<br>Visit Duration: 5 h</div>`)[0];
+                popup_b67b2a5c5589130cca69c2bb3f53e75e.setContent(html_cbe1c10f63605f7b2a4437f7b99f407c);
+            
+        
+
+        marker_34b0a72107103c1416bd4cbb76cea99a.bindPopup(popup_b67b2a5c5589130cca69c2bb3f53e75e)
+        ;
+
+        
+    
+    
+            marker_34b0a72107103c1416bd4cbb76cea99a.bindTooltip(
+                `<div>
+                     Bambarakanda Falls
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_34b0a72107103c1416bd4cbb76cea99a.setIcon(icon_e8536cd1e0e6d07f38d2f8d42ead75be);
+            
+    
+            var marker_0f5562d69b69a6300ed8cf9e71ef6710 = L.marker(
+                [6.7359, 81.0327],
+                {
+}
+            ).addTo(map_5d8a17b6ebcc9b907b59d814e3fb2b95);
+        
+    
+            var icon_405402be6f73fa86624916ef66e61f32 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "map-marker",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_7d5e2f645b71dac9b0ad36b86b56f4ed = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_4b168d551bceae3b1ac0e1971ff7a0d7 = $(`<div id="html_4b168d551bceae3b1ac0e1971ff7a0d7" style="width: 100.0%; height: 100.0%;"><b>Diyaluma Falls</b><br>Category: Nature<br>District: Badulla<br>Recommendation Score: 93.0%<br>Visit Duration: 5 h</div>`)[0];
+                popup_7d5e2f645b71dac9b0ad36b86b56f4ed.setContent(html_4b168d551bceae3b1ac0e1971ff7a0d7);
+            
+        
+
+        marker_0f5562d69b69a6300ed8cf9e71ef6710.bindPopup(popup_7d5e2f645b71dac9b0ad36b86b56f4ed)
+        ;
+
+        
+    
+    
+            marker_0f5562d69b69a6300ed8cf9e71ef6710.bindTooltip(
+                `<div>
+                     Diyaluma Falls
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_0f5562d69b69a6300ed8cf9e71ef6710.setIcon(icon_405402be6f73fa86624916ef66e61f32);
+            
+    
+            var marker_b604ecb31871095bc2c6d967e2914874 = L.marker(
+                [7.5245, 80.7339],
+                {
+}
+            ).addTo(map_5d8a17b6ebcc9b907b59d814e3fb2b95);
+        
+    
+            var icon_9869f744a6550faae61d03fb229683ce = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "map-marker",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_5be66535e72880d4cae82a056693d5a0 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_59601daa7241a225a716991ea9940f99 = $(`<div id="html_59601daa7241a225a716991ea9940f99" style="width: 100.0%; height: 100.0%;"><b>Riverston</b><br>Category: Hiking<br>District: Matale<br>Recommendation Score: 90.7%<br>Visit Duration: 6 h</div>`)[0];
+                popup_5be66535e72880d4cae82a056693d5a0.setContent(html_59601daa7241a225a716991ea9940f99);
+            
+        
+
+        marker_b604ecb31871095bc2c6d967e2914874.bindPopup(popup_5be66535e72880d4cae82a056693d5a0)
+        ;
+
+        
+    
+    
+            marker_b604ecb31871095bc2c6d967e2914874.bindTooltip(
+                `<div>
+                     Riverston
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_b604ecb31871095bc2c6d967e2914874.setIcon(icon_9869f744a6550faae61d03fb229683ce);
+            
+    
+            var marker_ef01c80ced3347ded4e495e146c05898 = L.marker(
+                [6.7198, 80.772],
+                {
+}
+            ).addTo(map_5d8a17b6ebcc9b907b59d814e3fb2b95);
+        
+    
+            var icon_d743663cc69ce0b762d83f89ece3b215 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "map-marker",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_ad5d14dc5791442a5f2f6932fd1bb55d = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_5e6b95290a72255a072877232183db93 = $(`<div id="html_5e6b95290a72255a072877232183db93" style="width: 100.0%; height: 100.0%;"><b>Belihuloya</b><br>Category: Adventure<br>District: Ratnapura<br>Recommendation Score: 88.8%<br>Visit Duration: 8 h</div>`)[0];
+                popup_ad5d14dc5791442a5f2f6932fd1bb55d.setContent(html_5e6b95290a72255a072877232183db93);
+            
+        
+
+        marker_ef01c80ced3347ded4e495e146c05898.bindPopup(popup_ad5d14dc5791442a5f2f6932fd1bb55d)
+        ;
+
+        
+    
+    
+            marker_ef01c80ced3347ded4e495e146c05898.bindTooltip(
+                `<div>
+                     Belihuloya
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_ef01c80ced3347ded4e495e146c05898.setIcon(icon_d743663cc69ce0b762d83f89ece3b215);
+            
+    
+            var marker_f597bb6334926a3ec5ecaebff3c18b64 = L.marker(
+                [7.4, 80.8],
+                {
+}
+            ).addTo(map_5d8a17b6ebcc9b907b59d814e3fb2b95);
+        
+    
+            var icon_d79a32817b21c0136138d04d2d37af3e = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "map-marker",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_2de0d30cc86fbab6baaa7ceee8e0b6c9 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_6a637c02e2718a8ab3b95f8c52487a7b = $(`<div id="html_6a637c02e2718a8ab3b95f8c52487a7b" style="width: 100.0%; height: 100.0%;"><b>Knuckles Mountain Range</b><br>Category: Hiking<br>District: Kandy<br>Recommendation Score: 87.7%<br>Visit Duration: 8 h</div>`)[0];
+                popup_2de0d30cc86fbab6baaa7ceee8e0b6c9.setContent(html_6a637c02e2718a8ab3b95f8c52487a7b);
+            
+        
+
+        marker_f597bb6334926a3ec5ecaebff3c18b64.bindPopup(popup_2de0d30cc86fbab6baaa7ceee8e0b6c9)
+        ;
+
+        
+    
+    
+            marker_f597bb6334926a3ec5ecaebff3c18b64.bindTooltip(
+                `<div>
+                     Knuckles Mountain Range
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_f597bb6334926a3ec5ecaebff3c18b64.setIcon(icon_d79a32817b21c0136138d04d2d37af3e);
+            
+    
+            map_5d8a17b6ebcc9b907b59d814e3fb2b95.fitBounds(
+                [[6.9271, 79.8612], [6.7734, 80.8313], [6.7359, 81.0327], [7.5245, 80.7339], [6.7198, 80.772], [7.4, 80.8]],
+                {"padding": [30, 30]}
+            );
+        
+</script>
+</html>
