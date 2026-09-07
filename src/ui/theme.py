@@ -719,6 +719,143 @@ h2 {
     color: var(--cc-ink);
 }
 
+/* Route timeline */
+
+.cc-route-timeline {
+    position: relative;
+    display: grid;
+    gap: 1rem;
+    margin: 1.2rem 0 1.5rem;
+}
+
+.cc-route-timeline::before {
+    content: "";
+    position: absolute;
+    top: 1.25rem;
+    bottom: 1.25rem;
+    left: 1.25rem;
+    width: 2px;
+    background: var(--cc-border);
+}
+
+.cc-route-stop {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    gap: 0.85rem;
+    align-items: start;
+}
+
+.cc-route-marker {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 4px solid #F8FAFB;
+    border-radius: 50%;
+    background: var(--cc-ocean);
+    color: #FFFFFF;
+    font-size: 0.85rem;
+    font-weight: 800;
+    box-shadow: 0 0 0 1px var(--cc-ocean);
+}
+
+.cc-route-card {
+    min-width: 0;
+    padding: 1.1rem 1.2rem;
+    border: 1px solid var(--cc-border);
+    border-radius: 0.85rem;
+    background: var(--cc-white);
+    box-shadow: 0 7px 20px rgba(25, 83, 84, 0.06);
+}
+
+.cc-route-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.cc-route-card h3 {
+    margin: 0.15rem 0 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    color: var(--cc-ink) !important;
+    font-size: 1.15rem !important;
+}
+
+.cc-route-stop-order,
+.cc-route-detail span,
+.cc-route-score span {
+    margin: 0;
+    color: var(--cc-muted);
+    font-size: 0.76rem;
+    font-weight: 750;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.cc-route-score {
+    flex: 0 0 auto;
+    text-align: right;
+}
+
+.cc-route-score strong {
+    display: block;
+    margin-top: 0.2rem;
+    color: var(--cc-green);
+    font-size: 1.15rem;
+}
+
+.cc-route-details {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--cc-border);
+}
+
+.cc-route-detail {
+    min-width: 0;
+}
+
+.cc-route-detail strong {
+    display: block;
+    margin-top: 0.25rem;
+    overflow: hidden;
+    color: var(--cc-ink);
+    font-size: 0.95rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cc-route-distance {
+    padding-left: 0.75rem;
+    border-left: 2px solid var(--cc-green);
+}
+
+@media (max-width: 640px) {
+    .cc-route-card-header,
+    .cc-route-details {
+        grid-template-columns: 1fr;
+    }
+
+    .cc-route-card-header {
+        display: grid;
+    }
+
+    .cc-route-score {
+        text-align: left;
+    }
+
+    .cc-route-details {
+        display: grid;
+    }
+}
+
 /* Traveller profile */
 
 .cc-profile {

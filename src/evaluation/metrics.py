@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pandas as pd
-
 from src.optimization.route_baseline import (
     calculate_baseline_route_distance,
     nearest_neighbour_route,

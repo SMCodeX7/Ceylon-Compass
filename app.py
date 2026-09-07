@@ -359,13 +359,52 @@ def display_interactive_route_map(
     st.divider()
 
     st.header(
-        "Interactive Trip Map"
+        "Explore Your Optimized Route"
     )
 
     st.caption(
-        "The green marker is your starting location. "
-        "Numbered markers show the optimized visit "
-        "sequence."
+        "Use the map to see how your selected destinations "
+        "connect from the starting point and follow the "
+        "recommended visit sequence."
+    )
+
+    with st.container(border=True):
+        st.subheader(
+            "Route Overview"
+        )
+
+        overview_col1, overview_col2, overview_col3 = (
+            st.columns(3)
+        )
+
+        overview_col1.metric(
+            "Starting Location",
+            plan.profile.starting_point,
+        )
+
+        overview_col2.metric(
+            "Destinations",
+            len(plan.optimized_route),
+        )
+
+        overview_col3.metric(
+            "Route Distance",
+            f"{plan.optimized_route_distance_km:.1f} km",
+        )
+
+        st.write(
+            "**Route efficiency** is a geographic planning "
+            "proxy used to select suitable route candidates. "
+            "It considers distance from the starting point and "
+            "relative proximity within the destination cluster; "
+            "it is not driving-road distance."
+        )
+
+    st.markdown(
+        "**Reading the map:** The green marker identifies the "
+        "starting location. Numbered markers show the optimized "
+        "visit order, and the connecting line follows that "
+        "geographic sequence."
     )
 
     route_map = build_optimized_route_map(
@@ -478,32 +517,111 @@ def display_route(
         route_text
     )
 
-    route_display = (
-        plan.optimized_route[
-            [
-                "route_order",
-                "name",
-                "district",
-                "category",
-                "distance_from_previous_km",
-                "final_score",
+    with st.container(border=True):
+        st.subheader(
+            "Why This Route Was Selected"
+        )
+
+        st.caption(
+            "The route combines destination quality with an "
+            "efficient geographic sequence."
+        )
+
+        explanation_col1, explanation_col2 = (
+            st.columns(2)
+        )
+
+        explanation_col1.markdown(
+            "**Reduced unnecessary travel distance**\n\n"
+            "The optimized sequence uses the existing segment "
+            "distances from the starting location through each "
+            "destination to limit avoidable geographic travel."
+        )
+
+        explanation_col2.markdown(
+            "**Destination sequence optimization**\n\n"
+            "Each numbered stop reflects the `route_order` "
+            "selected for the trip, so the visit order is explicit "
+            "from the first destination to the last."
+        )
+
+        explanation_col1.markdown(
+            "**Geographic efficiency**\n\n"
+            "Route efficiency uses the existing geographic "
+            "distance information to favor destinations that are "
+            "closer to the starting point and destination cluster."
+        )
+
+        explanation_col2.markdown(
+            "**Preference-aware route planning**\n\n"
+            "The route is built from destinations already ranked by "
+            "the final recommendation score, preserving the current "
+            "traveller preference, budget, weather, crowd, and route "
+            "efficiency signals."
+        )
+
+    route_stops = []
+
+    for _, destination in (
+        plan.optimized_route
+        .sort_values("route_order")
+        .iterrows()
+    ):
+        route_order = int(
+            destination[
+                "route_order"
             ]
-        ].copy()
-    )
+        )
 
-    route_display.columns = [
-        "Route Order",
-        "Destination",
-        "District",
-        "Category",
-        "Distance From Previous (km)",
-        "Final Recommendation Score",
-    ]
+        route_stops.append(
+            f"""
+            <article class="cc-route-stop">
+                <div class="cc-route-marker" aria-hidden="true">
+                    {route_order}
+                </div>
+                <div class="cc-route-card">
+                    <div class="cc-route-card-header">
+                        <div>
+                            <p class="cc-route-stop-order">
+                                Stop {route_order}
+                            </p>
+                            <h3>{escape(str(destination['name']))}</h3>
+                        </div>
+                        <div class="cc-route-score">
+                            <span>Recommendation score</span>
+                            <strong>{float(destination['final_score']):.1f}%</strong>
+                        </div>
+                    </div>
+                    <div class="cc-route-details">
+                        <div class="cc-route-detail">
+                            <span>District</span>
+                            <strong>{escape(str(destination['district']))}</strong>
+                        </div>
+                        <div class="cc-route-detail">
+                            <span>Category</span>
+                            <strong>{escape(str(destination['category']))}</strong>
+                        </div>
+                        <div class="cc-route-detail cc-route-distance">
+                            <span>Distance from previous location</span>
+                            <strong>{float(destination['distance_from_previous_km']):.1f} km</strong>
+                        </div>
+                    </div>
+                </div>
+            </article>
+            """
+        )
 
-    st.dataframe(
-        route_display,
-        use_container_width=True,
-        hide_index=True,
+    route_timeline_html = f"""
+    <div class="cc-route-timeline">
+        {''.join(route_stops)}
+    </div>
+    """
+
+    st.html(
+        route_timeline_html.replace(
+            "        ",
+            "",
+        )
     )
 
     display_interactive_route_map(
