@@ -29,6 +29,7 @@ from src.ui.theme import (
     render_footer,
     render_hero,
     render_section_intro,
+    render_section_header,
     render_sidebar_brand,
     render_traveller_profile,
 )
@@ -296,27 +297,15 @@ def display_recommendations(
 
     recommendations = plan.recommendations
 
-    st.header(
-        "Final Destination Recommendations"
+    render_section_header(
+        "Final Destination Recommendations",
+        "Destinations are ranked using traveller preferences, budget compatibility, Weather Information, crowd preference when selected, and geographic route-efficiency information."
     )
 
-    st.caption(
-        "Destinations are ranked using traveller "
-        "preferences, budget compatibility, Weather Information, "
-        "crowd preference when selected, and geographic "
-        "route-efficiency information."
-    )
-
+    st.html('<div style="margin-top: 24px;"></div>')
     display_scoring_methodology()
 
-    st.subheader(
-        "Recommendation Details"
-    )
-
-    st.caption(
-        "Each recommendation includes its rationale, the scoring factors "
-        "that shaped its Recommendation Score, and relevant trade-offs."
-    )
+    st.html('<div style="margin-top: 40px;"><h3 style="color: var(--cc-navy); font-size: 22px; font-weight: 800; margin: 0 0 8px;">Recommendation Details</h3><p style="color: var(--cc-slate); font-size: 15px; margin: 0 0 28px;">Each recommendation includes its rationale, the scoring factors that shaped its Recommendation Score, and relevant trade-offs.</p></div>')
 
     if recommendations.empty:
         st.info(
@@ -344,16 +333,9 @@ def display_interactive_route_map(
     OpenStreetMap.
     """
 
-    st.divider()
-
-    st.header(
-        "Explore Your Optimized Route"
-    )
-
-    st.caption(
-        "Use the map to see how your selected destinations "
-        "connect from the starting location and follow the "
-        "recommended visit sequence."
+    render_section_header(
+        "Explore Your Optimized Route",
+        "Use the map to see how your selected destinations connect from the starting location and follow the recommended visit sequence."
     )
 
     with st.container(border=True):
@@ -373,6 +355,8 @@ def display_interactive_route_map(
             "relative proximity within the destination cluster; "
             "it is not driving-road distance."
         )
+
+    st.html('<div style="margin-top: 24px;"></div>')
 
     st.markdown(
         "**Reading the map:** The green marker identifies the "
@@ -409,10 +393,9 @@ def display_route(
 ) -> None:
     """Display optimized route information."""
 
-    st.divider()
-
-    st.header(
-        "Optimized Trip Route"
+    render_section_header(
+        "Optimized Trip Route",
+        "Review the optimized visit order, geographic distance, and scheduled destination coverage for your trip.",
     )
 
     summary = plan.itinerary_summary
@@ -449,12 +432,7 @@ def display_route(
         ],
     )
 
-    st.caption(
-        "Distance currently uses Haversine "
-        "great-circle distance between coordinates. "
-        "It is a geographic proxy rather than "
-        "driving-road distance."
-    )
+    st.html('<p class="cc-route-haversine-note">Distance currently uses Haversine great-circle distance between coordinates. It is a geographic proxy rather than driving-road distance.</p>')
 
     route_names = (
         plan.optimized_route[
@@ -471,9 +449,7 @@ def display_route(
         )
         return
 
-    st.markdown(
-        "### Recommended Visit Order"
-    )
+    st.html('<h3 class="cc-subsection-title">Recommended Visit Order</h3>')
 
     with st.container(border=True):
         st.subheader(
@@ -602,10 +578,9 @@ def display_itinerary(
 ) -> None:
     """Display the generated day-by-day itinerary."""
 
-    st.divider()
-
-    st.header(
-        "Day-by-Day Itinerary"
+    render_section_header(
+        "Day-by-Day Itinerary",
+        "Destinations are assigned to trip days using an 8-hour daily activity limit in the optimized visit order.",
     )
 
     itinerary = plan.itinerary
@@ -865,15 +840,9 @@ def display_weather_intelligence(
     by the unified planning pipeline.
     """
 
-    st.header(
-        "Weather Information"
-    )
-
-    st.caption(
-        "Candidate ranking uses average forecast "
-        "suitability across the available trip horizon. "
-        "The itinerary below uses the specific forecast "
-        "for the day each destination is scheduled."
+    render_section_header(
+        "Weather Information",
+        "Candidate ranking uses average forecast suitability across the available trip horizon. The itinerary below uses the specific forecast for the day each destination is scheduled."
     )
 
     scheduled = (
@@ -1112,6 +1081,7 @@ def display_weather_intelligence(
 """.replace("    ", "")
     )
 
+    st.html('<div style="margin-top: 24px;"></div>')
     st.caption(
         "Weather data: Open-Meteo. Forecasts can "
         "change and should be rechecked close to "
@@ -1137,11 +1107,7 @@ def display_budget_breakdown(
     budget = plan.budget
     profile = plan.profile
 
-    st.divider()
-
-    st.header(
-        "Trip Budget"
-    )
+    render_section_header("Trip Budget")
 
     if not plan.itinerary["scheduled"].any():
         st.info(
@@ -1163,7 +1129,7 @@ def display_budget_breakdown(
 
     budget_html = [
         '<section class="cc-budget-container">',
-        '<h3>Budget summary</h3>',
+        '<h3 class="cc-budget-section-title">Budget summary</h3>',
         '<div class="cc-budget-summary">',
         '<div class="cc-budget-summary-card '
         'cc-budget-total-cost cc-budget-total">',
@@ -1180,7 +1146,7 @@ def display_budget_breakdown(
         f'<strong>${budget["total_budget_usd"]:.2f}</strong>',
         '</div>',
         '</div>',
-        '<h3>Cost breakdown</h3>',
+        '<h3 class="cc-budget-section-title cc-budget-breakdown-title">Cost breakdown</h3>',
         '<div class="cc-budget-breakdown">',
         '<div class="cc-budget-breakdown-row cc-budget-item '
         'cc-budget-activity">',
@@ -1212,16 +1178,14 @@ def display_budget_breakdown(
         '</div>',
         '</div>',
         '</div>',
-        '<p>Accommodation, food, and other expenses are not '
+        '<p class="cc-budget-note">Accommodation, food, and other expenses are not '
         'included in the current budget model.</p>',
         '</section>',
     ]
 
     st.html("".join(budget_html))
 
-    st.subheader(
-        "Spending overview"
-    )
+    st.html('<h3 class="cc-spending-overview-title">Spending Overview</h3>')
 
     budget_used_percent = (
         budget[
@@ -1391,14 +1355,9 @@ def main() -> None:
 
     render_hero()
 
-    render_section_intro(
-        title="Plan your Sri Lankan trip with clear reasons",
-        description=(
-            "Get explainable destination recommendations, an optimized "
-            "visit order, weather-aware planning, and a budget-aware "
-            "itinerary from one traveller profile."
-        ),
-        icon="🧳",
+    render_section_header(
+        "Trip Planner",
+        "Get explainable destination recommendations, an optimized visit order, weather-aware planning, and a budget-aware itinerary from one traveller profile.",
     )
 
     with st.container(border=True):
@@ -1507,7 +1466,6 @@ def main() -> None:
             ),
         )
 
-    st.markdown("")
 
     generate_trip = st.button(
         "✨ Create My Smart Journey",
@@ -1535,13 +1493,9 @@ def main() -> None:
                 interests=tuple(interests),
             )
 
-            render_section_intro(
-                title="Your traveller profile",
-                description=(
-                    "A clear summary of the preferences being "
-                    "used to create your personalized journey."
-                ),
-                icon="👤",
+            render_section_header(
+                "Your Traveller Profile",
+                "A clear summary of the preferences used to create your personalized journey.",
             )
 
             render_traveller_profile(
